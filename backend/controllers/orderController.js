@@ -8,7 +8,11 @@ const supabase = createClient(
 
 exports.createManualOrder = async (req, res) => {
     try {
-        const restaurant_id = req.user.id;
+        const userId = req.user.userId;
+        const { data: restaurant } = await supabase.from('restaurants').select('id').eq('userId', userId).single();
+        if (!restaurant) return res.status(404).json({ error: 'Restaurant not found for this user.' });
+
+        const restaurant_id = restaurant.id;
         const { customer_name, items, total_amount } = req.body;
 
         if (!items || items.length === 0) {
@@ -83,7 +87,11 @@ exports.createManualOrder = async (req, res) => {
 
 exports.getOrder = async (req, res) => {
     try {
-        const restaurant_id = req.user.id;
+        const userId = req.user.userId;
+        const { data: restaurant } = await supabase.from('restaurants').select('id').eq('userId', userId).single();
+        if (!restaurant) return res.status(404).json({ error: 'Restaurant not found for this user.' });
+
+        const restaurant_id = restaurant.id;
         const { id } = req.params;
 
         // Fetch order
@@ -118,7 +126,11 @@ exports.getOrder = async (req, res) => {
 
 exports.generateBillPDF = async (req, res) => {
     try {
-        const restaurant_id = req.user.id;
+        const userId = req.user.userId;
+        const { data: restaurantData } = await supabase.from('restaurants').select('id, restaurantName').eq('userId', userId).single();
+        if (!restaurantData) return res.status(404).json({ error: 'Restaurant not found for this user.' });
+
+        const restaurant_id = restaurantData.id;
         const { order_id } = req.body;
 
         // Fetch order with customer
@@ -143,12 +155,8 @@ exports.generateBillPDF = async (req, res) => {
             return res.status(500).json({ error: 'Failed to fetch order items.' });
         }
 
-        // Fetch restaurant details for header
-        const { data: restaurant, error: restError } = await supabase
-            .from('restaurants')
-            .select('restaurant_name')
-            .eq('id', restaurant_id)
-            .single();
+        // Headers mapped since we already fetched restaurantName
+        const restaurant = { restaurant_name: restaurantData.restaurantName };
 
         const doc = new PDFDocument({ margin: 50 });
 

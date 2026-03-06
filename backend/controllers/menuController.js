@@ -9,7 +9,11 @@ const supabase = createClient(
 
 exports.uploadCSV = async (req, res) => {
     try {
-        const restaurant_id = req.user.id; // From auth middleware
+        const userId = req.user.userId;
+        const { data: restaurant } = await supabase.from('restaurants').select('id').eq('userId', userId).single();
+        if (!restaurant) return res.status(404).json({ error: 'Restaurant not found for this user.' });
+
+        const restaurant_id = restaurant.id;
         const { menuType } = req.body;
 
         if (!req.file) {
@@ -98,7 +102,11 @@ exports.uploadCSV = async (req, res) => {
 
 exports.searchMenu = async (req, res) => {
     try {
-        const restaurant_id = req.user.id;
+        const userId = req.user.userId;
+        const { data: restaurant } = await supabase.from('restaurants').select('id').eq('userId', userId).single();
+        if (!restaurant) return res.status(404).json({ error: 'Restaurant not found for this user.' });
+
+        const restaurant_id = restaurant.id;
         const { q } = req.query; // optional search query
 
         let query = supabase
