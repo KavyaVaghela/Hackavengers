@@ -6,49 +6,24 @@ import axios from 'axios';
 import {
     ChefHat, UserCircle, LogOut, Home,
     Sparkles, Store, User, FileText, Phone, Mail, Globe, ChevronDown,
-    UploadCloud, Receipt, Bot, BookOpen, BarChart2, MessageSquare
 } from 'lucide-react';
+import TRANSLATIONS from './translations';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
-// ── i18n Translations ──────────────────────────────────────────
-const T = {
-    en: {
-        homePage: 'Home Page', myProfile: 'My Profile', langLabel: 'Language', logOut: 'Log Out',
-        uploadTitle: 'Upload CSV', uploadDesc: 'Import your menu, orders, or sales data from a spreadsheet.', uploadBadge: 'Data Import',
-        billingTitle: 'Manual Billing', billingDesc: 'Create and manage bills for dine-in, takeaway, or delivery.', billingBadge: 'POS',
-        aiTitle: 'AI Call', aiDesc: 'Intelligent voice assistant for hands-free restaurant operations.', aiBadge: 'AI Powered', aiFeatured: '✨ Featured',
-        menuTitle: 'Menu Doctor', menuDesc: 'AI-powered menu analysis to boost item profitability.', menuBadge: 'AI Powered',
-        insightsTitle: 'Business Insights', insightsDesc: 'Deep analytics on sales trends, customer habits, and peak hours.', insightsBadge: 'Analytics',
-        feedbackTitle: 'Feedback Form', feedbackDesc: 'Collect and review real-time customer feedback and ratings.', feedbackBadge: 'Engagement',
-        detailsSuffix: "'s Details", resLabel: 'Restaurant', ownerLabel: 'Owner', gstLabel: 'GST', phoneLabel: 'Phone', emailLabel: 'Email',
-    },
-    hi: {
-        homePage: 'होम पेज', myProfile: 'मेरी प्रोफ़ाइल', langLabel: 'भाषा', logOut: 'लॉग आउट',
-        uploadTitle: 'CSV अपलोड', uploadDesc: 'स्प्रेडशीट से मेनू, ऑर्डर या बिक्री डेटा आयात करें।', uploadBadge: 'डेटा आयात',
-        billingTitle: 'मैनुअल बिलिंग', billingDesc: 'डाइन-इन, टेकअवे या डिलीवरी के लिए बिल बनाएं।', billingBadge: 'पीओएस',
-        aiTitle: 'AI कॉल', aiDesc: 'हैंड्स-फ्री रेस्टोरेंट के लिए बुद्धिमान वॉयस असिस्टेंट।', aiBadge: 'AI संचालित', aiFeatured: '✨ विशेष',
-        menuTitle: 'मेनू डॉक्टर', menuDesc: 'मेनू लाभप्रदता बढ़ाने के लिए AI-संचालित विश्लेषण।', menuBadge: 'AI संचालित',
-        insightsTitle: 'व्यापार विश्लेषण', insightsDesc: 'बिक्री रुझानों और पीक घंटों का गहन विश्लेषण।', insightsBadge: 'विश्लेषण',
-        feedbackTitle: 'फीडबैक फ़ॉर्म', feedbackDesc: 'रियल-टाइम ग्राहक प्रतिक्रिया एकत्र करें।', feedbackBadge: 'जुड़ाव',
-        detailsSuffix: ' का विवरण', resLabel: 'रेस्टोरेंट', ownerLabel: 'मालिक', gstLabel: 'जीएसटी', phoneLabel: 'फ़ोन', emailLabel: 'ईमेल',
-    },
-    gu: {
-        homePage: 'હોમ પેજ', myProfile: 'મારી પ્રોફ઼ાઇલ', langLabel: 'ભાષા', logOut: 'લૉગ આઉટ',
-        uploadTitle: 'CSV અપલોડ', uploadDesc: 'સ્પ્રેડશીટ પરથી મેનૂ, ઑર્ડર અથવા ડેટા આયાત કરો.', uploadBadge: 'ડેટા આયાત',
-        billingTitle: 'મેન્યુઅલ બિલિંગ', billingDesc: 'ડાઇન-ઇન, ટેકઅવે અથવા ડિલિવરી માટે બિલ બનાવો.', billingBadge: 'POS',
-        aiTitle: 'AI કૉલ', aiDesc: 'હેન્ડ્સ-ફ્રી ઑપરેશન માટે ઇન્ટેલિજન્ટ વૉઇસ આસિસ્ટન્ટ.', aiBadge: 'AI સંચાલિત', aiFeatured: '✨ ખાસ',
-        menuTitle: 'મેનૂ ડૉક્ટર', menuDesc: 'AI-સંચાલિત મેનૂ વિશ્લેષણ નફાકારકતા વધારવા.', menuBadge: 'AI સંચાલિત',
-        insightsTitle: 'વ્યવસાય સૂઝ', insightsDesc: 'વેચાણ રુઝાનો, ગ્રાહક આદતો અને પીક કલાકોનું ગહન વિશ્લેષણ.', insightsBadge: 'Analytics',
-        feedbackTitle: 'ફીડબેક ફોર્મ', feedbackDesc: 'રીઅલ-ટાઇમ ગ્રાહક પ્રતિભાવ એકત્ર કરો અને સમીક્ષા કરો.', feedbackBadge: 'Engagement',
-        detailsSuffix: 'ની વિગતો', resLabel: 'રેસ્ટોરન્ટ', ownerLabel: 'માલિક', gstLabel: 'GST', phoneLabel: 'ફોન', emailLabel: 'ઇમેઇલ',
-    },
-};
-
 const LANG_OPTIONS = [
     { code: 'en', label: 'English' },
-    { code: 'hi', label: 'हिंदी (Hindi)' },
-    { code: 'gu', label: 'ગુજરાતી (Gujarati)' },
+    { code: 'hi', label: '\u0939\u093f\u0928\u094d\u0926\u0940 (Hindi)' },
+    { code: 'gu', label: '\u0a97\u0ac1\u0a9c\u0ab0\u0abe\u0aa4\u0ac0 (Gujarati)' },
+];
+
+// Card color configs to match the screenshot perfectly
+const CARDS = (t) => [
+    { id: 'upload', emoji: '\u2601\ufe0f', title: t.uploadTitle, desc: t.uploadDesc, badge: t.uploadBadge, icon: '#3B82F6', bg: '#EFF6FF', border: '#BFDBFE', tag: '#DBEAFE', tagText: '#1D4ED8' },
+    { id: 'billing', emoji: '\ud83d\udcb5', title: t.billingTitle, desc: t.billingDesc, badge: t.billingBadge, icon: '#10B981', bg: '#ECFDF5', border: '#A7F3D0', tag: '#D1FAE5', tagText: '#065F46' },
+    { id: 'ai', emoji: '\ud83e\udd16', title: t.aiTitle, desc: t.aiDesc, badge: t.aiBadge, icon: '#F97316', bg: '#FFF7ED', border: '#FED7AA', tag: '#FFEDD5', tagText: '#C2410C', featured: true, featuredLabel: t.aiFeatured },
+    { id: 'menu', emoji: '\ud83d\udcd6', title: t.menuTitle, desc: t.menuDesc, badge: t.menuBadge, icon: '#8B5CF6', bg: '#F5F3FF', border: '#DDD6FE', tag: '#EDE9FE', tagText: '#5B21B6' },
+    { id: 'insights', emoji: '\ud83d\udcca', title: t.insightsTitle, desc: t.insightsDesc, badge: t.insightsBadge, icon: '#0EA5E9', bg: '#F0F9FF', border: '#BAE6FD', tag: '#E0F2FE', tagText: '#0369A1' },
 ];
 
 export default function Dashboard() {
@@ -60,7 +35,7 @@ export default function Dashboard() {
     const [langOpen, setLangOpen] = useState(false);
     const langRef = useRef(null);
 
-    const t = T[lang];
+    const t = TRANSLATIONS[lang];
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -81,182 +56,142 @@ export default function Dashboard() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-                <div className="w-12 h-12 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin shadow-lg" />
+            <div style={{ minHeight: '100vh', background: '#FAFAFA', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 40, height: 40, border: '4px solid #FED7AA', borderTopColor: '#ea580c', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
             </div>
         );
     }
 
+    const cards = CARDS(t);
+
     return (
-        <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-orange-50/50 via-slate-50 to-slate-100 text-slate-800 font-sans flex flex-col selection:bg-orange-500/20">
+        <div style={{ minHeight: '100vh', background: '#FAFAFA', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', color: '#4b5563' }}>
 
-            {/* ── NAVBAR ─────────────────────────────────────────── */}
-            <header className="h-16 bg-white/70 backdrop-blur-lg border-b border-slate-200/60 shadow-[0_4px_30px_rgba(0,0,0,0.02)] sticky top-0 z-50">
-                <div className="h-full px-4 sm:px-6 flex items-center justify-between max-w-[1400px] mx-auto">
+            {/* ── NAVBAR ── */}
+            <header style={{ height: 72, background: '#FFFFFF', borderBottom: '1px solid #f3f4f6', position: 'sticky', top: 0, zIndex: 50 }}>
+                <div style={{ height: '100%', padding: '0 32px', display: 'flex', alignItems: 'center', justifyItems: 'center' }}>
 
-                    {/* Logo */}
-                    <div className="flex items-center gap-3 min-w-[140px]">
-                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-[0_8px_16px_rgba(249,115,22,0.25)] border border-orange-400/50">
-                            <ChefHat className="w-5 h-5 text-white drop-shadow-sm" />
+                    {/* Logo (Left) */}
+                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div style={{ width: 36, height: 36, borderRadius: 10, background: '#ea580c', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(234, 88, 12, 0.2)' }}>
+                            <ChefHat size={20} color="white" />
                         </div>
-                        <span className="text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700">PetPooja</span>
+                        <span style={{ fontSize: 20, fontWeight: 800, color: '#1f2937', letterSpacing: '-0.5px' }}>PetPooja</span>
                     </div>
 
-                    {/* Restaurant name */}
-                    <div className="hidden md:flex items-center gap-2 px-6 py-2 rounded-full bg-white border border-slate-200 shadow-sm">
-                        <Sparkles className="w-4 h-4 text-orange-500 animate-pulse" />
-                        <span className="text-sm font-bold text-slate-700 tracking-tight">
+                    {/* Restaurant Name (Center) */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 20px', borderRadius: 9999, background: '#FFF7ED', border: '1px solid #FED7AA' }}>
+                        <Sparkles size={16} color="#ea580c" />
+                        <span style={{ fontSize: 14, fontWeight: 700, color: '#c2410c' }}>
                             {restaurant?.restaurantName || 'My Restaurant'}
                         </span>
                     </div>
 
-                    {/* Right controls */}
-                    <div className="flex items-center gap-3 min-w-[140px] justify-end">
+                    {/* Right Controls */}
+                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'flex-end' }}>
 
-                        {/* Language dropdown */}
-                        <div className="relative" ref={langRef}>
+                        {/* Language Dropdown */}
+                        <div style={{ position: 'relative' }} ref={langRef}>
                             <button
                                 onClick={() => setLangOpen((o) => !o)}
-                                className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-600 bg-white hover:bg-slate-50 border border-slate-200 shadow-sm rounded-xl transition-all duration-200 hover:shadow-md"
+                                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', fontSize: 13, fontWeight: 600, color: '#4b5563', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 9999, cursor: 'pointer', transition: 'all 0.2s' }}
                             >
-                                <Globe className="w-4 h-4 text-blue-500" />
+                                <Globe size={14} color="#3B82F6" />
                                 {LANG_OPTIONS.find((l) => l.code === lang)?.label.split(' ')[0]}
-                                <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-300 ${langOpen ? 'rotate-180' : ''}`} />
+                                <ChevronDown size={14} style={{ transition: 'transform 0.2s', transform: langOpen ? 'rotate(180deg)' : 'none', color: '#9ca3af' }} />
                             </button>
                             {langOpen && (
-                                <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-100 rounded-2xl shadow-xl z-50 py-2 overflow-hidden transform origin-top right-0">
+                                <div style={{ position: 'absolute', right: 0, top: 'calc(100% + 8px)', width: 140, background: 'white', border: '1px solid #f3f4f6', borderRadius: 16, boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)', zIndex: 100, overflow: 'hidden', padding: '6px 0' }}>
                                     {LANG_OPTIONS.map((opt) => (
                                         <button
                                             key={opt.code}
                                             onClick={() => { setLang(opt.code); setLangOpen(false); }}
-                                            className={`w-full text-left px-5 py-3 text-sm font-semibold transition-colors flex items-center justify-between ${lang === opt.code ? 'bg-orange-50 text-orange-600' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                                                }`}
+                                            style={{ width: '100%', textAlign: 'left', padding: '10px 16px', fontSize: 13, fontWeight: 500, background: lang === opt.code ? '#fff7ed' : 'transparent', color: lang === opt.code ? '#c2410c' : '#4b5563', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
                                         >
                                             {opt.label}
-                                            {lang === opt.code && <div className="w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.8)]" />}
+                                            {lang === opt.code && <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#ea580c', display: 'block' }} />}
                                         </button>
                                     ))}
                                 </div>
                             )}
                         </div>
 
-                        <button className="hidden sm:flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-600 bg-white hover:bg-slate-50 border border-slate-200 shadow-sm rounded-xl transition-all duration-200 hover:shadow-md">
-                            <UserCircle className="w-4 h-4 text-slate-400" /> {t.myProfile}
+                        <button style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', fontSize: 13, fontWeight: 600, color: '#4b5563', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 9999, cursor: 'pointer' }}>
+                            <UserCircle size={14} color="#6b7280" /> {t.myProfile}
                         </button>
-                        <button
-                            onClick={handleLogout}
-                            className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-100 shadow-sm rounded-xl transition-all duration-200 hover:shadow-md"
-                        >
-                            <LogOut className="w-4 h-4" /> <span className="hidden sm:inline">{t.logOut}</span>
+                        <button onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', fontSize: 13, fontWeight: 600, color: '#ef4444', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 9999, cursor: 'pointer' }}>
+                            <LogOut size={14} /> {t.logOut}
                         </button>
                     </div>
                 </div>
             </header>
 
-            {/* ── BODY ───────────────────────────────────────────── */}
-            <div className="flex flex-1 max-w-[1400px] mx-auto w-full">
+            {/* ── BODY ── */}
+            <div style={{ display: 'flex', minHeight: 'calc(100vh - 72px)' }}>
 
                 {/* Sidebar */}
-                <aside className="w-64 border-r border-slate-200/60 bg-white/40 backdrop-blur-md hidden lg:flex flex-col py-8 px-4 gap-2 sticky top-16 h-[calc(100vh-64px)]">
+                <aside style={{ width: 280, background: '#FFFFFF', borderRight: '1px solid #f3f4f6', padding: '32px 24px', display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {[
-                        { id: 'home', icon: <Home className="w-5 h-5" />, label: t.homePage },
-                        { id: 'profile', icon: <UserCircle className="w-5 h-5" />, label: t.myProfile },
+                        { id: 'home', icon: <Home size={18} />, label: t.homePage },
+                        { id: 'profile', icon: <UserCircle size={18} />, label: t.myProfile },
                     ].map((item) => (
                         <button
                             key={item.id}
                             onClick={() => setActiveNav(item.id)}
-                            className={`flex items-center gap-3.5 px-5 py-3.5 rounded-2xl text-sm font-bold transition-all duration-200 w-full text-left group ${activeNav === item.id
-                                    ? 'bg-white shadow-md shadow-slate-200/50 text-orange-600 border border-slate-100'
-                                    : 'text-slate-500 hover:text-slate-900 hover:bg-white/60'
-                                }`}
+                            style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 20px', borderRadius: 16, fontSize: 15, fontWeight: 600, background: activeNav === item.id ? '#FFF7ED' : 'transparent', color: activeNav === item.id ? '#ea580c' : '#6b7280', border: '1px solid transparent', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s' }}
                         >
-                            <div className={`${activeNav === item.id ? 'text-orange-500' : 'text-slate-400 group-hover:text-slate-600'} transition-colors`}>
-                                {item.icon}
-                            </div>
+                            {item.icon}
                             {item.label}
                         </button>
                     ))}
                 </aside>
 
                 {/* Main Content */}
-                <main className="flex-1 px-4 sm:px-8 py-10 w-full overflow-y-auto">
-                    <div className="max-w-4xl mx-auto flex flex-col gap-8">
+                <main style={{ flex: 1, padding: '56px 64px' }}>
+                    <div style={{ maxWidth: 840, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 40 }}>
 
-                        {/* Header Area */}
-                        <div className="flex flex-col mb-2">
-                            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
-                                Good morning, {restaurant?.ownerName?.split(' ')[0] || 'Chef'} \ud83d\udc4b
-                            </h1>
-                            <p className="text-slate-500 font-medium text-sm">Here's what is happening with {restaurant?.restaurantName || 'your restaurant'} today.</p>
+                        {/* Row 1: Upload CSV | Manual Billing */}
+                        <div style={{ display: 'flex', gap: 32, justifyContent: 'center' }}>
+                            <div style={{ flex: 1 }}><GlassCard card={cards[0]} /></div>
+                            <div style={{ flex: 1 }}><GlassCard card={cards[1]} /></div>
                         </div>
 
-                        {/* ROW 1 — Upload CSV | Manual Billing */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-                            <PremiumCard
-                                icon={<UploadCloud className="w-7 h-7" />}
-                                title={t.uploadTitle} desc={t.uploadDesc} badge={t.uploadBadge}
-                                colorFrom="from-blue-500" colorTo="to-cyan-400" bgLight="bg-blue-50/50" textAccent="text-blue-600"
-                            />
-                            <PremiumCard
-                                icon={<Receipt className="w-7 h-7" />}
-                                title={t.billingTitle} desc={t.billingDesc} badge={t.billingBadge}
-                                colorFrom="from-emerald-500" colorTo="to-teal-400" bgLight="bg-emerald-50/50" textAccent="text-emerald-600"
-                            />
-                        </div>
-
-                        {/* ROW 2 — AI Call (centered prominently) */}
-                        <div className="flex justify-center w-full">
-                            <div className="w-full md:w-3/4 lg:w-2/3">
-                                <PremiumCard
-                                    icon={<Bot className="w-8 h-8" />}
-                                    title={t.aiTitle} desc={t.aiDesc} badge={t.aiBadge}
-                                    colorFrom="from-orange-500" colorTo="to-red-500" bgLight="bg-orange-50/50" textAccent="text-orange-600"
-                                    featured featuredLabel={t.aiFeatured}
-                                />
+                        {/* Row 2: AI Call centered */}
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                            <div style={{ width: '100%', maxWidth: 400 }}>
+                                <GlassCard card={cards[2]} />
                             </div>
                         </div>
 
-                        {/* ROW 3 — Menu Doctor | Business Insights */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-                            <PremiumCard
-                                icon={<BookOpen className="w-7 h-7" />}
-                                title={t.menuTitle} desc={t.menuDesc} badge={t.menuBadge}
-                                colorFrom="from-violet-500" colorTo="to-fuchsia-400" bgLight="bg-violet-50/50" textAccent="text-violet-600"
-                            />
-                            <PremiumCard
-                                icon={<BarChart2 className="w-7 h-7" />}
-                                title={t.insightsTitle} desc={t.insightsDesc} badge={t.insightsBadge}
-                                colorFrom="from-sky-500" colorTo="to-indigo-400" bgLight="bg-sky-50/50" textAccent="text-sky-600"
-                            />
+                        {/* Row 3: Menu Doctor | Business Insights */}
+                        <div style={{ display: 'flex', gap: 32, justifyContent: 'center' }}>
+                            <div style={{ flex: 1 }}><GlassCard card={cards[3]} /></div>
+                            <div style={{ flex: 1 }}><GlassCard card={cards[4]} /></div>
                         </div>
 
-                        {/* RESTAURANT DETAILS BAND */}
+                        {/* Restaurant Data */}
                         {restaurant && (
-                            <div className="rounded-3xl border border-slate-200/80 bg-white/80 backdrop-blur-xl shadow-lg shadow-slate-200/40 p-6 md:p-8 mt-4 overflow-hidden relative">
-                                <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-orange-100/50 to-transparent rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
-
-                                <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
-                                    <Store className="w-4 h-4 text-slate-400" />
-                                    {restaurant.restaurantName}{t.detailsSuffix}
-                                </p>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6 relative z-10">
-                                    <DataChip icon={<Store className="w-4 h-4 text-orange-500" />} label={t.resLabel} value={restaurant.restaurantName} />
-                                    <DataChip icon={<User className="w-4 h-4 text-blue-500" />} label={t.ownerLabel} value={restaurant.ownerName} />
-                                    <DataChip icon={<FileText className="w-4 h-4 text-yellow-500" />} label={t.gstLabel} value={restaurant.gstNumber} />
-                                    <DataChip icon={<Phone className="w-4 h-4 text-green-500" />} label={t.phoneLabel} value={restaurant.phone} />
-                                    <DataChip icon={<Mail className="w-4 h-4 text-pink-500" />} label={t.emailLabel} value={restaurant.email} />
+                            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 24 }}>
+                                <div style={{ width: '100%', padding: '24px 32px', background: '#FFFFFF', border: '1px solid #f3f4f6', borderRadius: 24, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
+                                    <p style={{ fontSize: 11, fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 20 }}>
+                                        {restaurant.restaurantName}{t.detailsSuffix}
+                                    </p>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 24 }}>
+                                        <DataChip icon={<Store size={15} color="#ea580c" />} label={t.resLabel} value={restaurant.restaurantName} />
+                                        <DataChip icon={<User size={15} color="#3B82F6" />} label={t.ownerLabel} value={restaurant.ownerName} />
+                                        <DataChip icon={<FileText size={15} color="#EAB308" />} label={t.gstLabel} value={restaurant.gstNumber} />
+                                        <DataChip icon={<Phone size={15} color="#10B981" />} label={t.phoneLabel} value={restaurant.phone} />
+                                        <DataChip icon={<Mail size={15} color="#EC4899" />} label={t.emailLabel} value={restaurant.email} />
+                                    </div>
                                 </div>
                             </div>
                         )}
 
-                        {/* ROW 4 — Feedback Form (centered at bottom) */}
-                        <div className="flex justify-center w-full mb-10">
-                            <div className="w-full md:w-3/4 lg:w-2/3">
-                                <PremiumCard
-                                    icon={<MessageSquare className="w-7 h-7" />}
-                                    title={t.feedbackTitle} desc={t.feedbackDesc} badge={t.feedbackBadge}
-                                    colorFrom="from-pink-500" colorTo="to-rose-400" bgLight="bg-pink-50/50" textAccent="text-pink-600"
-                                />
+                        {/* Row 4: Feedback Form centered */}
+                        <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: 64 }}>
+                            <div style={{ width: '100%', maxWidth: 400 }}>
+                                <GlassCard card={{ emoji: '\ud83d\udcac', title: t.feedbackTitle, desc: t.feedbackDesc, badge: t.feedbackBadge, icon: '#EC4899', bg: '#FDF2F8', border: '#FBCFE8', tag: '#FCE7F3', tagText: '#9D174D' }} />
                             </div>
                         </div>
 
@@ -267,44 +202,45 @@ export default function Dashboard() {
     );
 }
 
-function PremiumCard({ icon, title, desc, badge, colorFrom, colorTo, bgLight, textAccent, featured = false, featuredLabel }) {
+function GlassCard({ card }) {
+    const [hovered, setHovered] = useState(false);
     return (
         <button
-            className={`relative group text-left w-full p-6 md:p-8 rounded-3xl bg-white border border-slate-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] overflow-hidden ${featured ? 'ring-2 ring-orange-400/50' : ''}`}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+            style={{
+                position: 'relative', textAlign: 'left', width: '100%',
+                padding: 32, borderRadius: 24,
+                background: '#FFFFFF',
+                border: '1px solid #f3f4f6',
+                boxShadow: hovered ? '0 20px 40px rgba(0,0,0,0.06)' : '0 4px 20px rgba(0,0,0,0.03)',
+                cursor: 'pointer', transition: 'all 0.3s ease',
+                transform: hovered ? 'translateY(-4px)' : 'none',
+            }}
         >
-            <div className={`absolute inset-0 ${bgLight} opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`} />
-
-            {featured && (
-                <span className="absolute top-0 left-1/2 -translate-x-1/2 text-[10px] font-bold px-4 py-1.5 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-b-xl shadow-md whitespace-nowrap z-10">
-                    {featuredLabel}
+            {card.featured && (
+                <span style={{ position: 'absolute', top: -14, left: '50%', transform: 'translateX(-50%)', fontSize: 11, fontWeight: 700, padding: '4px 16px', background: '#ea580c', color: 'white', borderRadius: 24, whiteSpace: 'nowrap', boxShadow: '0 4px 12px rgba(234,88,12,0.3)' }}>
+                    {card.featuredLabel}
                 </span>
             )}
-
-            <div className="flex flex-col relative z-10">
-                <div className="flex items-start justify-between mb-5">
-                    <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${colorFrom} ${colorTo} flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                        {icon}
-                    </div>
-                    <span className={`text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full bg-slate-100 ${textAccent} border border-slate-200 group-hover:bg-white transition-colors`}>
-                        {badge}
-                    </span>
-                </div>
-
-                <h3 className="text-xl font-extrabold text-slate-800 mb-2 group-hover:text-slate-900">{title}</h3>
-                <p className="text-slate-500 text-sm font-medium leading-relaxed group-hover:text-slate-600 transition-colors">{desc}</p>
+            <div style={{ fontSize: 36, marginBottom: 20 }}>{card.emoji}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: '#1f2937', margin: 0 }}>{card.title}</h3>
+                <span style={{ fontSize: 11, fontWeight: 600, padding: '4px 12px', borderRadius: 16, background: card.tag, color: card.tagText }}>{card.badge}</span>
             </div>
+            <p style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.6, margin: 0 }}>{card.desc}</p>
         </button>
     );
 }
 
 function DataChip({ icon, label, value }) {
     return (
-        <div className="flex flex-col gap-1.5">
-            <div className="flex items-center gap-1.5">
-                {icon}
-                <p className="text-[10.5px] text-slate-400 font-bold uppercase tracking-wider">{label}</p>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+            <div style={{ marginTop: 2, flexShrink: 0 }}>{icon}</div>
+            <div style={{ minWidth: 0 }}>
+                <p style={{ fontSize: 10, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5, margin: '0 0 4px' }}>{label}</p>
+                <p style={{ fontSize: 14, fontWeight: 600, color: '#1f2937', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</p>
             </div>
-            <p className="text-sm font-bold text-slate-700 truncate w-full" title={value}>{value}</p>
         </div>
     );
 }
