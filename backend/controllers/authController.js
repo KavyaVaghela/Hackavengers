@@ -1,6 +1,6 @@
 const { OAuth2Client } = require('google-auth-library');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const supabase = require('../config/supabaseClient');
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -19,20 +19,36 @@ exports.googleLogin = async (req, res) => {
         const payload = ticket.getPayload();
         const { sub: googleId, email, name } = payload;
 
-        // Find or create user
-        let user = await User.findOne({ googleId });
-        if (!user) {
-            user = new User({
-                googleId,
-                email,
-                name,
-            });
-            await user.save();
+        // Check if user exists in Supabase
+        let { data: user, error: selectError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('googleId', googleId)
+            .single();
+
+        if (selectError && selectError.code !== 'PGRST116') {
+            console.error('Supabase select error:', selectError);
+            return res.status(500).json({ error: 'Database error fetching user' });
         }
 
-        // Generate JWT token
+        // Create user if not exists
+        if (!user) {
+            const { data: newUser, error: insertError } = await supabase
+                .from('users')
+                .insert([{ googleId, email, name }])
+                .select()
+                .single();
+
+            if (insertError) {
+                console.error('Supabase insert error:', insertError);
+                return res.status(500).json({ error: 'Database error creating user' });
+            }
+            user = newUser;
+        }
+
+        // Generate internal JWT token
         const jwtToken = jwt.sign(
-            { userId: user._id, email: user.email },
+            { userId: user.id, email: user.email },
             process.env.JWT_SECRET || 'fallback_secret',
             { expiresIn: '7d' }
         );
@@ -41,7 +57,7 @@ exports.googleLogin = async (req, res) => {
             message: 'Login successful',
             token: jwtToken,
             user: {
-                id: user._id,
+                id: user.id,
                 name: user.name,
                 email: user.email,
                 googleId: user.googleId,
