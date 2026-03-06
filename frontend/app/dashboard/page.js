@@ -6,31 +6,32 @@ import axios from 'axios';
 import {
     ChefHat, UserCircle, LogOut, Home,
     Sparkles, Store, User, FileText, Phone, Mail, Globe, ChevronDown,
+    LayoutDashboard, Receipt, Menu as MenuIcon, Settings
 } from 'lucide-react';
 import TRANSLATIONS from './translations';
+import FeatureCard from '../../components/FeatureCard';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 const LANG_OPTIONS = [
     { code: 'en', label: 'English' },
-    { code: 'hi', label: '\u0939\u093f\u0928\u094d\u0926\u0940 (Hindi)' },
-    { code: 'gu', label: '\u0a97\u0ac1\u0a9c\u0ab0\u0abe\u0aa4\u0ac0 (Gujarati)' },
+    { code: 'hi', label: 'हिन्दी (Hindi)' },
+    { code: 'gu', label: 'ગુજરાતી (Gujarati)' },
 ];
 
-// Card color configs to match the screenshot perfectly
 const CARDS = (t) => [
-    { id: 'upload', emoji: '\u2601\ufe0f', title: t.uploadTitle, desc: t.uploadDesc, badge: t.uploadBadge, icon: '#3B82F6', bg: '#EFF6FF', border: '#BFDBFE', tag: '#DBEAFE', tagText: '#1D4ED8' },
-    { id: 'billing', emoji: '\ud83d\udcb5', title: t.billingTitle, desc: t.billingDesc, badge: t.billingBadge, icon: '#10B981', bg: '#ECFDF5', border: '#A7F3D0', tag: '#D1FAE5', tagText: '#065F46' },
-    { id: 'ai', emoji: '\ud83e\udd16', title: t.aiTitle, desc: t.aiDesc, badge: t.aiBadge, icon: '#F97316', bg: '#FFF7ED', border: '#FED7AA', tag: '#FFEDD5', tagText: '#C2410C', featured: true, featuredLabel: t.aiFeatured },
-    { id: 'menu', emoji: '\ud83d\udcd6', title: t.menuTitle, desc: t.menuDesc, badge: t.menuBadge, icon: '#8B5CF6', bg: '#F5F3FF', border: '#DDD6FE', tag: '#EDE9FE', tagText: '#5B21B6' },
-    { id: 'insights', emoji: '\ud83d\udcca', title: t.insightsTitle, desc: t.insightsDesc, badge: t.insightsBadge, icon: '#0EA5E9', bg: '#F0F9FF', border: '#BAE6FD', tag: '#E0F2FE', tagText: '#0369A1' },
+    { id: 'upload', emoji: '☁️', title: t.uploadTitle, desc: t.uploadDesc, badge: t.uploadBadge, tag: '#334155', tagText: '#e2e8f0' },
+    { id: 'billing', emoji: '💸', title: t.billingTitle, desc: t.billingDesc, badge: t.billingBadge, tag: '#334155', tagText: '#e2e8f0' },
+    { id: 'ai', emoji: '🤖', title: t.aiTitle, desc: t.aiDesc, badge: t.aiBadge, tag: '#ea580c', tagText: '#ffffff', featured: true, featuredLabel: t.aiFeatured },
+    { id: 'menu', emoji: '📖', title: t.menuTitle, desc: t.menuDesc, badge: t.menuBadge, tag: '#334155', tagText: '#e2e8f0' },
+    { id: 'insights', emoji: '📊', title: t.insightsTitle, desc: t.insightsDesc, badge: t.insightsBadge, tag: '#334155', tagText: '#e2e8f0' },
 ];
 
 export default function Dashboard() {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [restaurant, setRestaurant] = useState(null);
-    const [activeNav, setActiveNav] = useState('home');
+    const [activeNav, setActiveNav] = useState('overview');
     const [lang, setLang] = useState('en');
     const [langOpen, setLangOpen] = useState(false);
     const langRef = useRef(null);
@@ -56,9 +57,8 @@ export default function Dashboard() {
 
     if (loading) {
         return (
-            <div style={{ minHeight: '100vh', background: '#FAFAFA', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ width: 40, height: 40, border: '4px solid #FED7AA', borderTopColor: '#ea580c', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-                <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+            <div className="min-h-screen bg-[#0F172A] flex items-center justify-center">
+                <div className="w-10 h-10 border-4 border-slate-700 border-t-[#FF6B2C] rounded-full animate-spin" />
             </div>
         );
     }
@@ -66,80 +66,78 @@ export default function Dashboard() {
     const cards = CARDS(t);
 
     return (
-        <div style={{ minHeight: '100vh', background: '#FAFAFA', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', color: '#4b5563' }}>
-
-            {/* ── NAVBAR ── */}
-            <header style={{ height: 72, background: '#FFFFFF', borderBottom: '1px solid #f3f4f6', position: 'sticky', top: 0, zIndex: 50 }}>
-                <div style={{ height: '100%', padding: '0 32px', display: 'flex', alignItems: 'center', justifyItems: 'center' }}>
-
+        <div className="min-h-screen bg-[#0F172A] font-sans text-slate-300">
+            {/* -- NAVBAR -- */}
+            <header className="h-[72px] bg-[#111827] border-b border-slate-800 sticky top-0 z-50">
+                <div className="h-full px-8 flex items-center justify-between">
                     {/* Logo (Left) */}
-                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{ width: 36, height: 36, borderRadius: 10, background: '#ea580c', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(234, 88, 12, 0.2)' }}>
-                            <ChefHat size={20} color="white" />
+                    <div className="flex-1 flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-lg bg-[#FF6B2C] flex items-center justify-center shadow-lg shadow-[#FF6B2C]/20">
+                            <ChefHat size={20} className="text-white" />
                         </div>
-                        <span style={{ fontSize: 20, fontWeight: 800, color: '#1f2937', letterSpacing: '-0.5px' }}>PetPooja</span>
+                        <span className="text-xl font-extrabold text-white tracking-tight">PetPooja</span>
                     </div>
 
                     {/* Restaurant Name (Center) */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 20px', borderRadius: 9999, background: '#FFF7ED', border: '1px solid #FED7AA' }}>
-                        <Sparkles size={16} color="#ea580c" />
-                        <span style={{ fontSize: 14, fontWeight: 700, color: '#c2410c' }}>
+                    <div className="flex items-center gap-2 px-5 py-2 rounded-full bg-slate-800 border border-slate-700">
+                        <Sparkles size={16} className="text-[#FF9F43]" />
+                        <span className="text-sm font-bold text-[#FF9F43]">
                             {restaurant?.restaurantName || 'My Restaurant'}
                         </span>
                     </div>
 
                     {/* Right Controls */}
-                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'flex-end' }}>
-
+                    <div className="flex-1 flex items-center justify-end gap-3">
                         {/* Language Dropdown */}
-                        <div style={{ position: 'relative' }} ref={langRef}>
+                        <div className="relative" ref={langRef}>
                             <button
                                 onClick={() => setLangOpen((o) => !o)}
-                                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', fontSize: 13, fontWeight: 600, color: '#4b5563', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 9999, cursor: 'pointer', transition: 'all 0.2s' }}
+                                className="flex items-center gap-2 px-4 py-2 text-[13px] font-semibold text-slate-300 bg-slate-800 border border-slate-700 rounded-full hover:bg-slate-700 transition-colors cursor-pointer"
                             >
-                                <Globe size={14} color="#3B82F6" />
+                                <Globe size={14} className="text-blue-400" />
                                 {LANG_OPTIONS.find((l) => l.code === lang)?.label.split(' ')[0]}
-                                <ChevronDown size={14} style={{ transition: 'transform 0.2s', transform: langOpen ? 'rotate(180deg)' : 'none', color: '#9ca3af' }} />
+                                <ChevronDown size={14} className={`transition-transform duration-200 text-slate-500 ${langOpen ? 'rotate-180' : ''}`} />
                             </button>
                             {langOpen && (
-                                <div style={{ position: 'absolute', right: 0, top: 'calc(100% + 8px)', width: 140, background: 'white', border: '1px solid #f3f4f6', borderRadius: 16, boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)', zIndex: 100, overflow: 'hidden', padding: '6px 0' }}>
+                                <div className="absolute right-0 top-[120%] w-[140px] bg-[#1E293B] border border-slate-700 rounded-2xl shadow-xl z-[100] overflow-hidden py-1.5">
                                     {LANG_OPTIONS.map((opt) => (
                                         <button
                                             key={opt.code}
                                             onClick={() => { setLang(opt.code); setLangOpen(false); }}
-                                            style={{ width: '100%', textAlign: 'left', padding: '10px 16px', fontSize: 13, fontWeight: 500, background: lang === opt.code ? '#fff7ed' : 'transparent', color: lang === opt.code ? '#c2410c' : '#4b5563', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                                            className={`w-full text-left px-4 py-2.5 text-[13px] font-medium flex items-center justify-between hover:bg-[#273449] cursor-pointer ${lang === opt.code ? 'bg-[#273449] text-[#FF9F43]' : 'text-slate-300'}`}
                                         >
                                             {opt.label}
-                                            {lang === opt.code && <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#ea580c', display: 'block' }} />}
+                                            {lang === opt.code && <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B2C] block" />}
                                         </button>
                                     ))}
                                 </div>
                             )}
                         </div>
 
-                        <button style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', fontSize: 13, fontWeight: 600, color: '#4b5563', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 9999, cursor: 'pointer' }}>
-                            <UserCircle size={14} color="#6b7280" /> {t.myProfile}
+                        <button className="flex items-center gap-2 px-4 py-2 text-[13px] font-semibold text-slate-300 bg-slate-800 border border-slate-700 rounded-full hover:bg-slate-700 transition-colors cursor-pointer">
+                            <UserCircle size={14} className="text-slate-400" /> {t.myProfile}
                         </button>
-                        <button onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', fontSize: 13, fontWeight: 600, color: '#ef4444', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 9999, cursor: 'pointer' }}>
+                        <button onClick={handleLogout} className="flex items-center gap-2 px-4 py-2 text-[13px] font-semibold text-red-400 bg-red-500/10 border border-red-500/20 rounded-full hover:bg-red-500/20 transition-colors cursor-pointer">
                             <LogOut size={14} /> {t.logOut}
                         </button>
                     </div>
                 </div>
             </header>
 
-            {/* ── BODY ── */}
-            <div style={{ display: 'flex', minHeight: 'calc(100vh - 72px)' }}>
-
+            {/* -- BODY -- */}
+            <div className="flex min-h-[calc(100vh-72px)]">
                 {/* Sidebar */}
-                <aside style={{ width: 280, background: '#FFFFFF', borderRight: '1px solid #f3f4f6', padding: '32px 24px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <aside className="w-[280px] bg-[#111827] border-r border-slate-800 p-8 flex flex-col gap-2">
                     {[
-                        { id: 'home', icon: <Home size={18} />, label: t.homePage },
-                        { id: 'profile', icon: <UserCircle size={18} />, label: t.myProfile },
+                        { id: 'overview', icon: <LayoutDashboard size={18} />, label: 'Overview' },
+                        { id: 'orders', icon: <Receipt size={18} />, label: 'Orders' },
+                        { id: 'menu', icon: <MenuIcon size={18} />, label: 'Menu' },
+                        { id: 'settings', icon: <Settings size={18} />, label: 'Settings' },
                     ].map((item) => (
                         <button
                             key={item.id}
                             onClick={() => setActiveNav(item.id)}
-                            style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 20px', borderRadius: 16, fontSize: 16, fontWeight: 700, background: activeNav === item.id ? '#ffedd5' : 'transparent', color: activeNav === item.id ? '#ea580c' : '#374151', border: '1px solid transparent', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s' }}
+                            className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl text-base font-bold text-left transition-all duration-200 border border-transparent cursor-pointer ${activeNav === item.id ? 'bg-[#ea580c] text-white' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}`}
                         >
                             {item.icon}
                             {item.label}
@@ -148,63 +146,46 @@ export default function Dashboard() {
                 </aside>
 
                 {/* Main Content */}
-                <main style={{ flex: 1, padding: '56px 64px' }}>
-                    <div style={{ maxWidth: 840, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 40 }}>
-
+                <main className="flex-1 p-10 lg:p-14">
+                    <div className="max-w-6xl mx-auto flex flex-col gap-10">
                         {/* Welcome Header */}
                         <div>
-                            <h1 style={{ fontSize: 32, fontWeight: 900, color: '#111827', margin: '0 0 8px', letterSpacing: '-0.5px' }}>
-                                Good morning, {restaurant?.ownerName?.split(' ')[0] || 'Chef'}
+                            <h1 className="text-3xl font-extrabold text-[#F8FAFC] tracking-tight mb-2">
+                                Restaurant Dashboard
                             </h1>
-                            <p style={{ fontSize: 16, color: '#4b5563', margin: 0, fontWeight: 500 }}>
+                            <p className="text-base text-[#CBD5F5] font-medium">
                                 Here's what is happening with {restaurant?.restaurantName || 'your restaurant'} today.
                             </p>
                         </div>
 
-                        {/* Row 1: Upload CSV | Manual Billing */}
-                        <div style={{ display: 'flex', gap: 32, justifyContent: 'center' }}>
-                            <div style={{ flex: 1 }}><GlassCard card={cards[0]} /></div>
-                            <div style={{ flex: 1 }}><GlassCard card={cards[1]} /></div>
-                        </div>
-
-                        {/* Row 2: AI Call centered */}
-                        <div style={{ display: 'flex', justifyContent: 'center' }}>
-                            <div style={{ width: '100%', maxWidth: 400 }}>
-                                <GlassCard card={cards[2]} />
-                            </div>
-                        </div>
-
-                        {/* Row 3: Menu Doctor | Business Insights */}
-                        <div style={{ display: 'flex', gap: 32, justifyContent: 'center' }}>
-                            <div style={{ flex: 1 }}><GlassCard card={cards[3]} /></div>
-                            <div style={{ flex: 1 }}><GlassCard card={cards[4]} /></div>
+                        {/* Grid Layout for Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <FeatureCard icon={cards[0].emoji} title={cards[0].title} description={cards[0].desc} badge={cards[0].badge} />
+                            <FeatureCard icon={cards[1].emoji} title={cards[1].title} description={cards[1].desc} badge={cards[1].badge} />
+                            <FeatureCard icon={cards[2].emoji} title={cards[2].title} description={cards[2].desc} badge={cards[2].badge} featured={cards[2].featured} featuredLabel={cards[2].featuredLabel} />
+                            <FeatureCard icon={cards[3].emoji} title={cards[3].title} description={cards[3].desc} badge={cards[3].badge} />
+                            <FeatureCard icon={cards[4].emoji} title={cards[4].title} description={cards[4].desc} badge={cards[4].badge} />
+                            {/* Feedback form as 6th card to balance grid */}
+                            <FeatureCard icon="💬" title={t.feedbackTitle} description={t.feedbackDesc} badge={t.feedbackBadge} />
                         </div>
 
                         {/* Restaurant Data */}
                         {restaurant && (
-                            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 24 }}>
-                                <div style={{ width: '100%', padding: '24px 32px', background: '#FFFFFF', border: '1px solid #f3f4f6', borderRadius: 24, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-                                    <p style={{ fontSize: 11, fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 20 }}>
+                            <div className="mt-8">
+                                <div className="p-8 bg-[#1E293B] border border-[#334155] rounded-3xl shadow-sm">
+                                    <p className="text-[11px] font-bold text-[#CBD5F5] uppercase tracking-widest mb-6">
                                         {restaurant.restaurantName}{t.detailsSuffix}
                                     </p>
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 24 }}>
-                                        <DataChip icon={<Store size={15} color="#ea580c" />} label={t.resLabel} value={restaurant.restaurantName} />
-                                        <DataChip icon={<User size={15} color="#3B82F6" />} label={t.ownerLabel} value={restaurant.ownerName} />
-                                        <DataChip icon={<FileText size={15} color="#EAB308" />} label={t.gstLabel} value={restaurant.gstNumber} />
-                                        <DataChip icon={<Phone size={15} color="#10B981" />} label={t.phoneLabel} value={restaurant.phone} />
-                                        <DataChip icon={<Mail size={15} color="#EC4899" />} label={t.emailLabel} value={restaurant.email} />
+                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                                        <DataChip icon={<Store size={15} className="text-[#FF6B2C]" />} label={t.resLabel} value={restaurant.restaurantName} />
+                                        <DataChip icon={<User size={15} className="text-blue-500" />} label={t.ownerLabel} value={restaurant.ownerName} />
+                                        <DataChip icon={<FileText size={15} className="text-yellow-500" />} label={t.gstLabel} value={restaurant.gstNumber} />
+                                        <DataChip icon={<Phone size={15} className="text-emerald-500" />} label={t.phoneLabel} value={restaurant.phone} />
+                                        <DataChip icon={<Mail size={15} className="text-pink-500" />} label={t.emailLabel} value={restaurant.email} />
                                     </div>
                                 </div>
                             </div>
                         )}
-
-                        {/* Row 4: Feedback Form centered */}
-                        <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: 64 }}>
-                            <div style={{ width: '100%', maxWidth: 400 }}>
-                                <GlassCard card={{ emoji: '\ud83d\udcac', title: t.feedbackTitle, desc: t.feedbackDesc, badge: t.feedbackBadge, icon: '#EC4899', bg: '#FDF2F8', border: '#FBCFE8', tag: '#FCE7F3', tagText: '#9D174D' }} />
-                            </div>
-                        </div>
-
                     </div>
                 </main>
             </div>
@@ -212,44 +193,13 @@ export default function Dashboard() {
     );
 }
 
-function GlassCard({ card }) {
-    const [hovered, setHovered] = useState(false);
-    return (
-        <button
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
-            style={{
-                position: 'relative', textAlign: 'left', width: '100%',
-                padding: 32, borderRadius: 24,
-                background: '#FFFFFF',
-                border: '1px solid #f3f4f6',
-                boxShadow: hovered ? '0 20px 40px rgba(0,0,0,0.06)' : '0 4px 20px rgba(0,0,0,0.03)',
-                cursor: 'pointer', transition: 'all 0.3s ease',
-                transform: hovered ? 'translateY(-4px)' : 'none',
-            }}
-        >
-            {card.featured && (
-                <span style={{ position: 'absolute', top: -14, left: '50%', transform: 'translateX(-50%)', fontSize: 11, fontWeight: 700, padding: '4px 16px', background: '#ea580c', color: 'white', borderRadius: 24, whiteSpace: 'nowrap', boxShadow: '0 4px 12px rgba(234,88,12,0.3)' }}>
-                    {card.featuredLabel}
-                </span>
-            )}
-            <div style={{ fontSize: 36, marginBottom: 20 }}>{card.emoji}</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                <h3 style={{ fontSize: 16, fontWeight: 700, color: '#1f2937', margin: 0 }}>{card.title}</h3>
-                <span style={{ fontSize: 11, fontWeight: 600, padding: '4px 12px', borderRadius: 16, background: card.tag, color: card.tagText }}>{card.badge}</span>
-            </div>
-            <p style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.6, margin: 0 }}>{card.desc}</p>
-        </button>
-    );
-}
-
 function DataChip({ icon, label, value }) {
     return (
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-            <div style={{ marginTop: 2, flexShrink: 0 }}>{icon}</div>
-            <div style={{ minWidth: 0 }}>
-                <p style={{ fontSize: 10, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5, margin: '0 0 4px' }}>{label}</p>
-                <p style={{ fontSize: 14, fontWeight: 600, color: '#1f2937', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</p>
+        <div className="flex items-start gap-2.5">
+            <div className="mt-0.5 shrink-0">{icon}</div>
+            <div className="min-w-0">
+                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">{label}</p>
+                <p className="text-sm font-semibold text-[#CBD5F5] truncate">{value}</p>
             </div>
         </div>
     );
