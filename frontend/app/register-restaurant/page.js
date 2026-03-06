@@ -26,6 +26,7 @@ export default function RegisterRestaurant() {
         if (!token) {
             router.push('/');
         } else {
+            // eslint-disable-next-line
             setCheckingAuth(false);
         }
     }, [router]);

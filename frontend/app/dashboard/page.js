@@ -138,8 +138,8 @@ export default function Dashboard() {
                             key={item.id}
                             onClick={() => setActiveNav(item.id)}
                             className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl text-base font-bold text-left transition-all duration-200 border cursor-pointer ${activeNav === item.id
-                                    ? 'bg-white border-slate-200 text-[#FF6B2C] shadow-sm'
-                                    : 'border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-200/50'
+                                ? 'bg-white border-slate-200 text-[#FF6B2C] shadow-sm'
+                                : 'border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-200/50'
                                 }`}
                         >
                             {item.icon}
@@ -157,7 +157,7 @@ export default function Dashboard() {
                                 Restaurant Dashboard
                             </h1>
                             <p className="text-base text-[#64748B] font-medium">
-                                Here's what is happening with {restaurant?.restaurantName || 'your restaurant'} today.
+                                Here&apos;s what is happening with {restaurant?.restaurantName || 'your restaurant'} today.
                             </p>
                         </div>
 

@@ -1,4 +1,4 @@
-export default {
+const translations = {
     en: {
         homePage: 'Overview',
         myProfile: 'My Profile',
@@ -90,3 +90,5 @@ export default {
         feedbackBadge: 'જોડાણ',
     }
 };
+
+export default translations;
