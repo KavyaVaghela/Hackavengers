@@ -139,7 +139,7 @@ export default function Dashboard() {
                         <button
                             key={item.id}
                             onClick={() => setActiveNav(item.id)}
-                            style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 20px', borderRadius: 16, fontSize: 15, fontWeight: 600, background: activeNav === item.id ? '#FFF7ED' : 'transparent', color: activeNav === item.id ? '#ea580c' : '#6b7280', border: '1px solid transparent', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s' }}
+                            style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 20px', borderRadius: 16, fontSize: 16, fontWeight: 700, background: activeNav === item.id ? '#ffedd5' : 'transparent', color: activeNav === item.id ? '#ea580c' : '#374151', border: '1px solid transparent', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s' }}
                         >
                             {item.icon}
                             {item.label}
@@ -150,6 +150,16 @@ export default function Dashboard() {
                 {/* Main Content */}
                 <main style={{ flex: 1, padding: '56px 64px' }}>
                     <div style={{ maxWidth: 840, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 40 }}>
+
+                        {/* Welcome Header */}
+                        <div>
+                            <h1 style={{ fontSize: 32, fontWeight: 900, color: '#111827', margin: '0 0 8px', letterSpacing: '-0.5px' }}>
+                                Good morning, {restaurant?.ownerName?.split(' ')[0] || 'Chef'}
+                            </h1>
+                            <p style={{ fontSize: 16, color: '#4b5563', margin: 0, fontWeight: 500 }}>
+                                Here's what is happening with {restaurant?.restaurantName || 'your restaurant'} today.
+                            </p>
+                        </div>
 
                         {/* Row 1: Upload CSV | Manual Billing */}
                         <div style={{ display: 'flex', gap: 32, justifyContent: 'center' }}>
