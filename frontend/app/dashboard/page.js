@@ -20,11 +20,11 @@ const LANG_OPTIONS = [
 ];
 
 const CARDS = (t) => [
-    { id: 'upload', emoji: '☁️', title: t.uploadTitle, desc: t.uploadDesc, badge: t.uploadBadge, tag: '#334155', tagText: '#e2e8f0' },
-    { id: 'billing', emoji: '💸', title: t.billingTitle, desc: t.billingDesc, badge: t.billingBadge, tag: '#334155', tagText: '#e2e8f0' },
-    { id: 'ai', emoji: '🤖', title: t.aiTitle, desc: t.aiDesc, badge: t.aiBadge, tag: '#ea580c', tagText: '#ffffff', featured: true, featuredLabel: t.aiFeatured },
-    { id: 'menu', emoji: '📖', title: t.menuTitle, desc: t.menuDesc, badge: t.menuBadge, tag: '#334155', tagText: '#e2e8f0' },
-    { id: 'insights', emoji: '📊', title: t.insightsTitle, desc: t.insightsDesc, badge: t.insightsBadge, tag: '#334155', tagText: '#e2e8f0' },
+    { id: 'upload', emoji: '☁️', title: t.uploadTitle, desc: t.uploadDesc, badge: t.uploadBadge },
+    { id: 'billing', emoji: '💸', title: t.billingTitle, desc: t.billingDesc, badge: t.billingBadge },
+    { id: 'ai', emoji: '🤖', title: t.aiTitle, desc: t.aiDesc, badge: t.aiBadge, featured: true, featuredLabel: t.aiFeatured },
+    { id: 'menu', emoji: '📖', title: t.menuTitle, desc: t.menuDesc, badge: t.menuBadge },
+    { id: 'insights', emoji: '📊', title: t.insightsTitle, desc: t.insightsDesc, badge: t.insightsBadge },
 ];
 
 export default function Dashboard() {
@@ -57,8 +57,8 @@ export default function Dashboard() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-[#0F172A] flex items-center justify-center">
-                <div className="w-10 h-10 border-4 border-slate-700 border-t-[#FF6B2C] rounded-full animate-spin" />
+            <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
+                <div className="w-10 h-10 border-4 border-slate-200 border-t-[#FF6B2C] rounded-full animate-spin" />
             </div>
         );
     }
@@ -66,22 +66,22 @@ export default function Dashboard() {
     const cards = CARDS(t);
 
     return (
-        <div className="min-h-screen bg-[#0F172A] font-sans text-slate-300">
+        <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900">
             {/* -- NAVBAR -- */}
-            <header className="h-[72px] bg-[#111827] border-b border-slate-800 sticky top-0 z-50">
+            <header className="h-[72px] bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
                 <div className="h-full px-8 flex items-center justify-between">
                     {/* Logo (Left) */}
                     <div className="flex-1 flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-[#FF6B2C] flex items-center justify-center shadow-lg shadow-[#FF6B2C]/20">
+                        <div className="w-9 h-9 rounded-lg bg-[#FF6B2C] flex items-center justify-center shadow-md shadow-[#FF6B2C]/20">
                             <ChefHat size={20} className="text-white" />
                         </div>
-                        <span className="text-xl font-extrabold text-white tracking-tight">PetPooja</span>
+                        <span className="text-xl font-extrabold text-slate-900 tracking-tight">PetPooja</span>
                     </div>
 
                     {/* Restaurant Name (Center) */}
-                    <div className="flex items-center gap-2 px-5 py-2 rounded-full bg-slate-800 border border-slate-700">
-                        <Sparkles size={16} className="text-[#FF9F43]" />
-                        <span className="text-sm font-bold text-[#FF9F43]">
+                    <div className="flex items-center gap-2 px-5 py-2 rounded-full bg-[#FFF7ED] border border-[#FF9F43]/30">
+                        <Sparkles size={16} className="text-[#FF6B2C]" />
+                        <span className="text-sm font-bold text-[#FF6B2C]">
                             {restaurant?.restaurantName || 'My Restaurant'}
                         </span>
                     </div>
@@ -92,19 +92,19 @@ export default function Dashboard() {
                         <div className="relative" ref={langRef}>
                             <button
                                 onClick={() => setLangOpen((o) => !o)}
-                                className="flex items-center gap-2 px-4 py-2 text-[13px] font-semibold text-slate-300 bg-slate-800 border border-slate-700 rounded-full hover:bg-slate-700 transition-colors cursor-pointer"
+                                className="flex items-center gap-2 px-4 py-2 text-[13px] font-semibold text-slate-700 bg-white border border-slate-200 rounded-full hover:bg-slate-50 transition-colors cursor-pointer"
                             >
-                                <Globe size={14} className="text-blue-400" />
+                                <Globe size={14} className="text-blue-500" />
                                 {LANG_OPTIONS.find((l) => l.code === lang)?.label.split(' ')[0]}
-                                <ChevronDown size={14} className={`transition-transform duration-200 text-slate-500 ${langOpen ? 'rotate-180' : ''}`} />
+                                <ChevronDown size={14} className={`transition-transform duration-200 text-slate-400 ${langOpen ? 'rotate-180' : ''}`} />
                             </button>
                             {langOpen && (
-                                <div className="absolute right-0 top-[120%] w-[140px] bg-[#1E293B] border border-slate-700 rounded-2xl shadow-xl z-[100] overflow-hidden py-1.5">
+                                <div className="absolute right-0 top-[120%] w-[140px] bg-white border border-slate-200 rounded-2xl shadow-xl z-[100] overflow-hidden py-1.5">
                                     {LANG_OPTIONS.map((opt) => (
                                         <button
                                             key={opt.code}
                                             onClick={() => { setLang(opt.code); setLangOpen(false); }}
-                                            className={`w-full text-left px-4 py-2.5 text-[13px] font-medium flex items-center justify-between hover:bg-[#273449] cursor-pointer ${lang === opt.code ? 'bg-[#273449] text-[#FF9F43]' : 'text-slate-300'}`}
+                                            className={`w-full text-left px-4 py-2.5 text-[13px] font-medium flex items-center justify-between hover:bg-slate-50 cursor-pointer ${lang === opt.code ? 'bg-[#FFF7ED] text-[#FF6B2C]' : 'text-slate-700'}`}
                                         >
                                             {opt.label}
                                             {lang === opt.code && <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B2C] block" />}
@@ -114,10 +114,10 @@ export default function Dashboard() {
                             )}
                         </div>
 
-                        <button className="flex items-center gap-2 px-4 py-2 text-[13px] font-semibold text-slate-300 bg-slate-800 border border-slate-700 rounded-full hover:bg-slate-700 transition-colors cursor-pointer">
-                            <UserCircle size={14} className="text-slate-400" /> {t.myProfile}
+                        <button className="flex items-center gap-2 px-4 py-2 text-[13px] font-semibold text-slate-700 bg-white border border-slate-200 rounded-full hover:bg-slate-50 transition-colors cursor-pointer shadow-sm">
+                            <UserCircle size={14} className="text-slate-500" /> {t.myProfile}
                         </button>
-                        <button onClick={handleLogout} className="flex items-center gap-2 px-4 py-2 text-[13px] font-semibold text-red-400 bg-red-500/10 border border-red-500/20 rounded-full hover:bg-red-500/20 transition-colors cursor-pointer">
+                        <button onClick={handleLogout} className="flex items-center gap-2 px-4 py-2 text-[13px] font-semibold text-red-600 bg-red-50 border border-red-100 rounded-full hover:bg-red-100 transition-colors cursor-pointer shadow-sm">
                             <LogOut size={14} /> {t.logOut}
                         </button>
                     </div>
@@ -127,7 +127,7 @@ export default function Dashboard() {
             {/* -- BODY -- */}
             <div className="flex min-h-[calc(100vh-72px)]">
                 {/* Sidebar */}
-                <aside className="w-[280px] bg-[#111827] border-r border-slate-800 p-8 flex flex-col gap-2">
+                <aside className="w-[280px] bg-[#F1F5F9] border-r border-slate-200 p-8 flex flex-col gap-2">
                     {[
                         { id: 'overview', icon: <LayoutDashboard size={18} />, label: 'Overview' },
                         { id: 'orders', icon: <Receipt size={18} />, label: 'Orders' },
@@ -137,7 +137,10 @@ export default function Dashboard() {
                         <button
                             key={item.id}
                             onClick={() => setActiveNav(item.id)}
-                            className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl text-base font-bold text-left transition-all duration-200 border border-transparent cursor-pointer ${activeNav === item.id ? 'bg-[#ea580c] text-white' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}`}
+                            className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl text-base font-bold text-left transition-all duration-200 border cursor-pointer ${activeNav === item.id
+                                    ? 'bg-white border-slate-200 text-[#FF6B2C] shadow-sm'
+                                    : 'border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-200/50'
+                                }`}
                         >
                             {item.icon}
                             {item.label}
@@ -150,10 +153,10 @@ export default function Dashboard() {
                     <div className="max-w-6xl mx-auto flex flex-col gap-10">
                         {/* Welcome Header */}
                         <div>
-                            <h1 className="text-3xl font-extrabold text-[#F8FAFC] tracking-tight mb-2">
+                            <h1 className="text-3xl font-extrabold text-[#0F172A] tracking-tight mb-2">
                                 Restaurant Dashboard
                             </h1>
-                            <p className="text-base text-[#CBD5F5] font-medium">
+                            <p className="text-base text-[#64748B] font-medium">
                                 Here's what is happening with {restaurant?.restaurantName || 'your restaurant'} today.
                             </p>
                         </div>
@@ -172,14 +175,14 @@ export default function Dashboard() {
                         {/* Restaurant Data */}
                         {restaurant && (
                             <div className="mt-8">
-                                <div className="p-8 bg-[#1E293B] border border-[#334155] rounded-3xl shadow-sm">
-                                    <p className="text-[11px] font-bold text-[#CBD5F5] uppercase tracking-widest mb-6">
+                                <div className="p-8 bg-white border border-slate-200 rounded-3xl shadow-sm">
+                                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-6">
                                         {restaurant.restaurantName}{t.detailsSuffix}
                                     </p>
                                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
                                         <DataChip icon={<Store size={15} className="text-[#FF6B2C]" />} label={t.resLabel} value={restaurant.restaurantName} />
                                         <DataChip icon={<User size={15} className="text-blue-500" />} label={t.ownerLabel} value={restaurant.ownerName} />
-                                        <DataChip icon={<FileText size={15} className="text-yellow-500" />} label={t.gstLabel} value={restaurant.gstNumber} />
+                                        <DataChip icon={<FileText size={15} className="text-amber-500" />} label={t.gstLabel} value={restaurant.gstNumber} />
                                         <DataChip icon={<Phone size={15} className="text-emerald-500" />} label={t.phoneLabel} value={restaurant.phone} />
                                         <DataChip icon={<Mail size={15} className="text-pink-500" />} label={t.emailLabel} value={restaurant.email} />
                                     </div>
@@ -198,8 +201,8 @@ function DataChip({ icon, label, value }) {
         <div className="flex items-start gap-2.5">
             <div className="mt-0.5 shrink-0">{icon}</div>
             <div className="min-w-0">
-                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">{label}</p>
-                <p className="text-sm font-semibold text-[#CBD5F5] truncate">{value}</p>
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">{label}</p>
+                <p className="text-sm font-semibold text-slate-800 truncate">{value}</p>
             </div>
         </div>
     );
