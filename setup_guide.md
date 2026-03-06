@@ -80,31 +80,46 @@ The connection is already handled. The Next.js components use Axios to send requ
 
 ---
 
-## 5. Deployment
+## 5. Deployment (Publishing your website)
 
-### Deploy Backend on Render
+To publish your website on the internet, you will use **Render** for the backend and **Vercel** for the frontend. Both services require you to have your code stored in a GitHub repository.
 
-1. Create a GitHub repository and push your entire `petpooja` folder to it.
-2. Go to [Render](https://render.com/) and create a new **Web Service**.
-3. Connect your GitHub repository.
-4. Set the **Root Directory** to `backend`.
-5. Set the Build Command: `npm install`
-6. Set the Start Command: `node server.js`
-7. Click **Advanced** and add Environment Variables:
+### Step 5.1: Push your code to GitHub
+
+1. I have already initialized a local Git repository for your project.
+2. Go to [GitHub](https://github.com/) and create a new repository (e.g., named `petpooja`). Do NOT initialize it with a README, .gitignore, or license.
+3. Open your terminal in the `petpooja` folder and run the commands GitHub gives you to push an existing repository. It usually looks like this:
+   ```bash
+   git remote add origin https://github.com/<your-username>/petpooja.git
+   git branch -M main
+   git push -u origin main
+   ```
+4. Now your code is live on GitHub!
+
+### Step 5.2: Deploy Backend on Render
+
+1. Go to [Render](https://render.com/) and create a new **Web Service**.
+2. Connect your GitHub account and select your `petpooja` repository.
+3. Once connected, configure the service:
+   - **Root Directory**: `backend` (This is very important!)
+   - **Build Command**: `npm install`
+   - **Start Command**: `node server.js`
+4. Click **Advanced** and add these Environment Variables:
    - `MONGO_URI`: (Your Atlas connection string)
    - `GOOGLE_CLIENT_ID`: (Your Google Client ID)
-   - `JWT_SECRET`: (Your secret)
+   - `JWT_SECRET`: (Your secret string, e.g., `my_super_secret`)
    *(Render will assign a PORT automatically)*
-8. Click **Create Web Service**. Wait for it to deploy and copy the deployed URL (e.g., `https://petpooja-api.onrender.com`).
+5. Click **Create Web Service**. Wait for it to finish deploying and copy the deployed backend URL (e.g., `https://petpooja-api.onrender.com`).
 
-### Deploy Frontend on Vercel
+### Step 5.3: Deploy Frontend on Vercel
 
 1. Go to [Vercel](https://vercel.com/) and click **Add New Project**.
-2. Import the same GitHub repository.
-3. Edit the **Root Directory** and select `frontend`.
-4. The Framework Preset should automatically switch to Next.js.
-5. In **Environment Variables**, add:
+2. Import your `petpooja` GitHub repository.
+3. Configure the project:
+   - **Root Directory**: Click "Edit" and change it to `frontend`.
+   - The Framework Preset should automatically be recognized as Next.js.
+4. In **Environment Variables**, add:
    - `NEXT_PUBLIC_GOOGLE_CLIENT_ID`: (Your Google Client ID)
-   - `NEXT_PUBLIC_API_URL`: (The URL of your deployed Render backend, e.g., `https://petpooja-api.onrender.com`)
-6. Click **Deploy**.
-7. **Important Final Step**: Once Vercel generates your production domain (e.g., `https://petpooja-frontend.vercel.app`), go back to your Google Cloud Console and add this URL to **Authorized JavaScript origins**. Without this, Google Login will fail on the live site!
+   - `NEXT_PUBLIC_API_URL`: (The URL of your deployed Render backend from Step 5.2, e.g., `https://petpooja-api.onrender.com`)
+5. Click **Deploy**.
+6. **Important Final Step**: Once Vercel generates your production domain (e.g., `https://petpooja-frontend.vercel.app`), go back to your Google Cloud Console and add this exact URL to the **Authorized JavaScript origins** section. Without this, Google Login will fail on the live site!
