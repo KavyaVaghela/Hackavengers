@@ -95,3 +95,34 @@ exports.uploadCSV = async (req, res) => {
         res.status(500).json({ error: 'Internal server error during upload.' });
     }
 };
+
+exports.searchMenu = async (req, res) => {
+    try {
+        const restaurant_id = req.user.id;
+        const { q } = req.query; // optional search query
+
+        let query = supabase
+            .from('menus')
+            .select('*')
+            .eq('restaurant_id', restaurant_id);
+
+        if (q && q.trim() !== '') {
+            query = query.ilike('item_name', `%${q}%`);
+        }
+
+        // Return latest items first
+        query = query.order('created_at', { ascending: false });
+
+        const { data, error } = await query;
+
+        if (error) {
+            console.error('Menu Search Error:', error);
+            return res.status(500).json({ error: 'Failed to search menu.' });
+        }
+
+        return res.status(200).json(data);
+    } catch (error) {
+        console.error('Menu Search Error:', error);
+        res.status(500).json({ error: 'Internal server error during search.' });
+    }
+};

@@ -8,5 +8,6 @@ const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 
 router.post('/upload', authMiddleware, upload.single('csvFile'), menuController.uploadCSV);
+router.get('/search', authMiddleware, menuController.searchMenu);
 
 module.exports = router;

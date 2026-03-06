@@ -6,6 +6,7 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const restaurantRoutes = require('./routes/restaurant');
 const menuRoutes = require('./routes/menu');
+const orderRoutes = require('./routes/order');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -19,6 +20,7 @@ app.use(express.json());
 app.use('/auth', authRoutes);
 app.use('/restaurant', restaurantRoutes);
 app.use('/api/menu', menuRoutes);
+app.use('/api/orders', orderRoutes);
 
 app.get('/', (req, res) => {
     res.send('PetPooja API is running');

@@ -214,7 +214,13 @@ export default function Dashboard() {
                                 badge={cards[0].badge}
                                 onClick={() => setIsUploadModalOpen(true)}
                             />
-                            <FeatureCard icon={cards[1].emoji} title={cards[1].title} description={cards[1].desc} badge={cards[1].badge} />
+                            <FeatureCard
+                                icon={cards[1].emoji}
+                                title={cards[1].title}
+                                description={cards[1].desc}
+                                badge={cards[1].badge}
+                                onClick={() => router.push('/pos')}
+                            />
                             <FeatureCard icon={cards[2].emoji} title={cards[2].title} description={cards[2].desc} badge={cards[2].badge} featured={cards[2].featured} featuredLabel={cards[2].featuredLabel} />
                             <FeatureCard icon={cards[3].emoji} title={cards[3].title} description={cards[3].desc} badge={cards[3].badge} />
                             <FeatureCard icon={cards[4].emoji} title={cards[4].title} description={cards[4].desc} badge={cards[4].badge} />
@@ -323,8 +329,8 @@ export default function Dashboard() {
                             {/* Status Messages */}
                             {uploadStatus && (
                                 <div className={`p-4 rounded-xl mb-6 text-sm font-semibold border ${uploadStatus.type === 'success'
-                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                        : 'bg-red-50 text-red-700 border-red-200'
+                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                    : 'bg-red-50 text-red-700 border-red-200'
                                     }`}>
                                     {uploadStatus.message}
                                 </div>
