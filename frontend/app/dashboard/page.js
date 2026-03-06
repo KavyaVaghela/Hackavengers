@@ -6,7 +6,7 @@ import axios from 'axios';
 import {
     ChefHat, UserCircle, LogOut, Home,
     Sparkles, Store, User, FileText, Phone, Mail, Globe, ChevronDown,
-    LayoutDashboard, Receipt, Menu as MenuIcon, Settings
+    LayoutDashboard, Receipt, Menu as MenuIcon, Settings, X, UploadCloud, Loader2
 } from 'lucide-react';
 import TRANSLATIONS from './translations';
 import FeatureCard from '../../components/FeatureCard';
@@ -34,6 +34,14 @@ export default function Dashboard() {
     const [activeNav, setActiveNav] = useState('overview');
     const [lang, setLang] = useState('en');
     const [langOpen, setLangOpen] = useState(false);
+
+    // CSV Upload State
+    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+    const [uploadFile, setUploadFile] = useState(null);
+    const [menuType, setMenuType] = useState('Veg');
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadStatus, setUploadStatus] = useState(null); // { type: 'success' | 'error', message: '' }
+
     const langRef = useRef(null);
 
     const t = TRANSLATIONS[lang];
@@ -54,6 +62,42 @@ export default function Dashboard() {
     }, []);
 
     const handleLogout = () => { localStorage.removeItem('token'); router.push('/'); };
+
+    const handleUploadSubmit = async (e) => {
+        e.preventDefault();
+        if (!uploadFile) return;
+
+        setIsUploading(true);
+        setUploadStatus(null);
+
+        const formData = new FormData();
+        formData.append('csvFile', uploadFile);
+        formData.append('menuType', menuType);
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.post(`${API_URL}/api/menu/upload`, formData, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            setUploadStatus({ type: 'success', message: t.uploadSuccess });
+            setUploadFile(null); // Reset after success
+            setTimeout(() => {
+                setIsUploadModalOpen(false);
+                setUploadStatus(null);
+            }, 3000);
+        } catch (error) {
+            console.error('Upload Error:', error);
+            setUploadStatus({
+                type: 'error',
+                message: error.response?.data?.error || t.uploadError
+            });
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -163,7 +207,13 @@ export default function Dashboard() {
 
                         {/* Grid Layout for Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <FeatureCard icon={cards[0].emoji} title={cards[0].title} description={cards[0].desc} badge={cards[0].badge} />
+                            <FeatureCard
+                                icon={cards[0].emoji}
+                                title={cards[0].title}
+                                description={cards[0].desc}
+                                badge={cards[0].badge}
+                                onClick={() => setIsUploadModalOpen(true)}
+                            />
                             <FeatureCard icon={cards[1].emoji} title={cards[1].title} description={cards[1].desc} badge={cards[1].badge} />
                             <FeatureCard icon={cards[2].emoji} title={cards[2].title} description={cards[2].desc} badge={cards[2].badge} featured={cards[2].featured} featuredLabel={cards[2].featuredLabel} />
                             <FeatureCard icon={cards[3].emoji} title={cards[3].title} description={cards[3].desc} badge={cards[3].badge} />
@@ -192,6 +242,120 @@ export default function Dashboard() {
                     </div>
                 </main>
             </div>
+
+            {/* -- CSV UPLOAD MODAL -- */}
+            {isUploadModalOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                                <UploadCloud size={20} className="text-[#FF6B2C]" />
+                                {t.uploadModalTitle}
+                            </h3>
+                            <button
+                                onClick={() => setIsUploadModalOpen(false)}
+                                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors cursor-pointer"
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+
+                        {/* Modal Body */}
+                        <form onSubmit={handleUploadSubmit} className="p-6">
+
+                            {/* Menu Type Selector */}
+                            <div className="mb-6">
+                                <label className="block text-[13px] font-semibold text-slate-700 mb-2 uppercase tracking-wide">
+                                    {t.selectMenuType}
+                                </label>
+                                <div className="relative">
+                                    <select
+                                        value={menuType}
+                                        onChange={(e) => setMenuType(e.target.value)}
+                                        className="w-full appearance-none bg-[#F8FAFC] border border-slate-200 text-slate-900 text-sm rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#FF6B2C]/50 focus:border-[#FF6B2C] cursor-pointer"
+                                    >
+                                        <option value="Veg">Veg</option>
+                                        <option value="Non-Veg">Non-Veg</option>
+                                        <option value="Veg + Non-Veg">Veg + Non-Veg</option>
+                                        <option value="Drinks">Drinks</option>
+                                        <option value="Desserts">Desserts</option>
+                                        <option value="Snacks">Snacks</option>
+                                        <option value="Combos">Combos</option>
+                                    </select>
+                                    <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                                </div>
+                            </div>
+
+                            {/* File Upload Area */}
+                            <div className="mb-6">
+                                <label className="block text-[13px] font-semibold text-slate-700 mb-2 uppercase tracking-wide">
+                                    {t.uploadMenuFile}
+                                </label>
+                                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-200 border-dashed rounded-xl hover:bg-slate-50 transition-colors relative">
+                                    <div className="space-y-1 text-center">
+                                        <UploadCloud className="mx-auto h-12 w-12 text-slate-300 mb-3" />
+                                        <div className="flex text-sm text-slate-600 justify-center">
+                                            <label htmlFor="file-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-[#FF6B2C] hover:text-[#ea580c] focus-within:outline-none">
+                                                <span>Choose CSV file</span>
+                                                <input
+                                                    id="file-upload"
+                                                    name="file-upload"
+                                                    type="file"
+                                                    accept=".csv"
+                                                    className="sr-only"
+                                                    onChange={(e) => setUploadFile(e.target.files[0])}
+                                                    required
+                                                />
+                                            </label>
+                                            <p className="pl-1">or drag and drop</p>
+                                        </div>
+                                        <p className="text-xs text-slate-500">
+                                            {uploadFile ? uploadFile.name : 'No file chosen'}
+                                        </p>
+                                    </div>
+                                </div>
+                                <p className="mt-2 text-[11px] text-slate-500 font-medium">
+                                    {t.supportedFormatNote}
+                                </p>
+                            </div>
+
+                            {/* Status Messages */}
+                            {uploadStatus && (
+                                <div className={`p-4 rounded-xl mb-6 text-sm font-semibold border ${uploadStatus.type === 'success'
+                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                        : 'bg-red-50 text-red-700 border-red-200'
+                                    }`}>
+                                    {uploadStatus.message}
+                                </div>
+                            )}
+
+                            {/* Modal Footer Actions */}
+                            <div className="flex items-center gap-3 mt-8">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsUploadModalOpen(false)}
+                                    className="flex-1 px-4 py-3 text-sm font-bold text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors cursor-pointer"
+                                >
+                                    {t.cancel}
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={!uploadFile || isUploading}
+                                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold text-white bg-[#FF6B2C] rounded-xl hover:bg-[#ea580c] transition-colors cursor-pointer shadow-md shadow-[#FF6B2C]/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {isUploading ? (
+                                        <><Loader2 size={16} className="animate-spin" /> {t.uploading}</>
+                                    ) : (
+                                        t.upload
+                                    )}
+                                </button>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

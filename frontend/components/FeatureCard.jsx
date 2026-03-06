@@ -1,9 +1,10 @@
-export default function FeatureCard({ icon, title, description, badge, featured, featuredLabel }) {
+export default function FeatureCard({ icon, title, description, badge, featured, featuredLabel, onClick }) {
     return (
         <button
+            onClick={onClick}
             className={`group relative text-left w-full p-8 rounded-2xl bg-white border shadow-sm transition-all duration-300 ease-in-out cursor-pointer flex flex-col h-full hover:-translate-y-1 hover:shadow-md ${featured
-                    ? 'border-[#FF9F43] hover:bg-[#FFF7ED] ring-1 ring-[#FF9F43]/20'
-                    : 'border-slate-200 hover:bg-slate-50'
+                ? 'border-[#FF9F43] hover:bg-[#FFF7ED] ring-1 ring-[#FF9F43]/20'
+                : 'border-slate-200 hover:bg-slate-50'
                 }`}
         >
             {featured && (
@@ -20,8 +21,8 @@ export default function FeatureCard({ icon, title, description, badge, featured,
                 {badge && (
                     <span
                         className={`text-[11px] font-semibold py-1 px-3 rounded-full ${featured
-                                ? 'bg-[#FF6B2C]/10 text-[#FF6B2C]'
-                                : 'bg-slate-100 text-slate-600'
+                            ? 'bg-[#FF6B2C]/10 text-[#FF6B2C]'
+                            : 'bg-slate-100 text-slate-600'
                             }`}
                     >
                         {badge}

@@ -28,6 +28,15 @@ const translations = {
         feedbackTitle: 'Customer Feedback',
         feedbackDesc: 'Collect and analyze reviews and general customer sentiment.',
         feedbackBadge: 'ENGAGEMENT',
+        uploadModalTitle: 'Upload CSV Menu',
+        selectMenuType: 'Select Menu Type',
+        uploadMenuFile: 'Upload Menu File',
+        supportedFormatNote: 'Supported Format: CSV only. Required columns: item_name, price, cost, margin, category.',
+        uploading: 'Uploading...',
+        uploadSuccess: 'Menu uploaded successfully!',
+        uploadError: 'Failed to upload menu. Please try again.',
+        cancel: 'Cancel',
+        upload: 'Upload CSV'
     },
     hi: {
         homePage: 'अवलोकन',
@@ -58,6 +67,15 @@ const translations = {
         feedbackTitle: 'ग्राहक प्रतिक्रिया',
         feedbackDesc: 'समीक्षाएँ और सामान्य ग्राहक भावना एकत्र करें और उनका विश्लेषण करें।',
         feedbackBadge: 'जुड़ाव',
+        uploadModalTitle: 'CSV मेनू अपलोड करें',
+        selectMenuType: 'मेनू प्रकार चुनें',
+        uploadMenuFile: 'मेनू फ़ाइल अपलोड करें',
+        supportedFormatNote: 'समर्थित प्रारूप: केवल CSV। आवश्यक कॉलम: item_name, price, cost, margin, category.',
+        uploading: 'अपलोड हो रहा है...',
+        uploadSuccess: 'मेनू सफलतापूर्वक अपलोड किया गया!',
+        uploadError: 'मेनू अपलोड करने में विफल रहा। कृपया पुनः प्रयास करें।',
+        cancel: 'रद्द करें',
+        upload: 'अपलोड करें'
     },
     gu: {
         homePage: 'ઝાંખી',
@@ -88,6 +106,15 @@ const translations = {
         feedbackTitle: 'ગ્રાહક પ્રતિસાદ',
         feedbackDesc: 'સમીક્ષાઓ અને સામાન્ય ગ્રાહક લાગણી એકત્રિત કરો અને તેનું વિશ્લેષણ કરો.',
         feedbackBadge: 'જોડાણ',
+        uploadModalTitle: 'CSV મેનૂ અપલોડ કરો',
+        selectMenuType: 'મેનુ પ્રકાર પસંદ કરો',
+        uploadMenuFile: 'મેનુ ફાઇલ અપલોડ કરો',
+        supportedFormatNote: 'સપોર્ટેડ ફોર્મેટ: માત્ર CSV. જરૂરી કૉલમ: item_name, price, cost, margin, category.',
+        uploading: 'અપલોડ થઈ રહ્યું છે...',
+        uploadSuccess: 'મેનૂ સફળતાપૂર્વક અપલોડ થયું!',
+        uploadError: 'મેનૂ અપલોડ કરવામાં નિષ્ફળ. કૃપા કરીને ફરી પ્રયાસ કરો.',
+        cancel: 'રદ કરો',
+        upload: 'અપલોડ કરો'
     }
 };
 
