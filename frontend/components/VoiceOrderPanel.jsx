@@ -2,9 +2,27 @@
 import { useState, useEffect, useRef } from 'react';
 import { Mic, Square, Loader2, Volume2 } from 'lucide-react';
 
+const normalizeSpeech = (text) => {
+    if (!text) return '';
+    let normalized = text.toLowerCase();
+
+    // Remove punctuation
+    normalized = normalized.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '');
+
+    // Remove filler words
+    const fillers = ['please', 'dena', 'mujhe', 'ek', 'aur'];
+    const fillerRegex = new RegExp(`\\b(${fillers.join('|')})\\b`, 'gi');
+    normalized = normalized.replace(fillerRegex, ' ');
+
+    // Trim multiple spaces
+    normalized = normalized.replace(/\s{2,}/g, ' ').trim();
+    return normalized;
+};
+
 export default function VoiceOrderPanel() {
     const [isListening, setIsListening] = useState(false);
     const [transcript, setTranscript] = useState('');
+    const [normalizedTranscript, setNormalizedTranscript] = useState('');
     const [error, setError] = useState(null);
     const recognitionRef = useRef(null);
 
@@ -37,6 +55,7 @@ export default function VoiceOrderPanel() {
                 currentTranscript += event.results[i][0].transcript;
             }
             setTranscript(currentTranscript);
+            setNormalizedTranscript(normalizeSpeech(currentTranscript));
         };
 
         recognition.onerror = (event) => {
@@ -60,6 +79,7 @@ export default function VoiceOrderPanel() {
 
     const startListening = () => {
         setTranscript('');
+        setNormalizedTranscript('');
         setError(null);
         if (recognitionRef.current) {
             try {
@@ -104,9 +124,23 @@ export default function VoiceOrderPanel() {
                         </p>
                     )}
                     {transcript && (
-                        <p className="text-slate-800 text-lg leading-relaxed font-medium">
-                            {transcript}
-                        </p>
+                        <div className="flex flex-col gap-4">
+                            <div>
+                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Raw Transcript</p>
+                                <p className="text-slate-800 text-lg leading-relaxed font-medium">
+                                    {transcript}
+                                </p>
+                            </div>
+
+                            {normalizedTranscript && (
+                                <div className="pt-4 border-t border-slate-100">
+                                    <p className="text-xs font-bold text-emerald-500 uppercase tracking-widest mb-1">Normalized Output</p>
+                                    <p className="text-emerald-700 text-lg leading-relaxed font-semibold bg-emerald-50 inline-block px-3 py-1 rounded-lg border border-emerald-100/50">
+                                        {normalizedTranscript}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
                     )}
                     {isListening && (
                         <div className="absolute bottom-4 right-4 flex items-center gap-2 px-3 py-1.5 bg-orange-100 text-orange-600 rounded-full text-xs font-bold animate-pulse shadow-sm">
