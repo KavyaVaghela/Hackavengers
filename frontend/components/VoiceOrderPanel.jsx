@@ -239,13 +239,41 @@ export default function VoiceOrderPanel() {
         }
     };
 
-    const handleConfirmOrder = () => {
-        alert("Order Confirmed! Sending to Kitchen...");
-        // In real app: POST to /api/orders
-        setTranscript('');
-        setMatchedItems([]);
-        setUpsellSuggestion(null);
-        setDetectedModifiers({ size: null, spice: null, removals: [] });
+    const [orderStatus, setOrderStatus] = useState(null); // 'success' | 'error' | 'loading'
+
+    const handleConfirmOrder = async () => {
+        setOrderStatus('loading');
+        try {
+            const token = localStorage.getItem('token');
+            const payload = {
+                order_type: 'voice',
+                items: matchedItems.map(item => ({
+                    id: item.id,
+                    name: item.item_name,
+                    quantity: item.quantity,
+                    price: item.price
+                })),
+                total_amount: calculateTotal(),
+                created_at: new Date().toISOString()
+            };
+
+            await axios.post(`${API_URL}/api/orders/voice`, payload, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            setOrderStatus('success');
+            setTimeout(() => {
+                setTranscript('');
+                setMatchedItems([]);
+                setUpsellSuggestion(null);
+                setDetectedModifiers({ size: null, spice: null, removals: [] });
+                setOrderStatus(null);
+            }, 2500);
+        } catch (err) {
+            console.error('Voice order failed:', err);
+            setOrderStatus('error');
+            setTimeout(() => setOrderStatus(null), 3000);
+        }
     };
 
     const handleCancelOrder = () => {
@@ -394,15 +422,23 @@ export default function VoiceOrderPanel() {
                                     <div className="flex items-center gap-3 mt-6">
                                         <button
                                             onClick={handleCancelOrder}
-                                            className="flex-1 py-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl font-bold transition-colors shadow-sm"
+                                            disabled={orderStatus === 'loading'}
+                                            className="flex-1 py-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl font-bold transition-colors shadow-sm disabled:opacity-50"
                                         >
                                             Cancel Order
                                         </button>
                                         <button
                                             onClick={handleConfirmOrder}
-                                            className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold transition-colors shadow-emerald-500/20 shadow-md flex items-center justify-center gap-2"
+                                            disabled={orderStatus === 'loading' || orderStatus === 'success'}
+                                            className={`flex-1 py-3 rounded-xl font-bold transition-all shadow-md flex items-center justify-center gap-2 ${orderStatus === 'success'
+                                                    ? 'bg-green-100 text-green-700 border border-green-200'
+                                                    : orderStatus === 'error'
+                                                        ? 'bg-red-100 text-red-700 border border-red-200'
+                                                        : 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/20'
+                                                }`}
                                         >
-                                            Confirm Order
+                                            {orderStatus === 'loading' && <Loader2 size={16} className="animate-spin" />}
+                                            {orderStatus === 'success' ? '✓ Order Placed!' : orderStatus === 'error' ? '✕ Failed. Retry?' : 'Confirm Order'}
                                         </button>
                                     </div>
                                 </div>

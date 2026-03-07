@@ -85,6 +85,72 @@ exports.createManualOrder = async (req, res) => {
     }
 };
 
+exports.createVoiceOrder = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { data: restaurant } = await supabase.from('restaurants').select('id').eq('userId', userId).single();
+        if (!restaurant) return res.status(404).json({ error: 'Restaurant not found for this user.' });
+
+        const restaurant_id = restaurant.id;
+        const { items, total_amount } = req.body;
+
+        if (!items || items.length === 0) {
+            return res.status(400).json({ error: 'Voice order must contain at least one item.' });
+        }
+
+        // 1. Insert order with order_type = 'voice'
+        const { data: orderData, error: orderError } = await supabase
+            .from('orders')
+            .insert([{
+                restaurant_id,
+                customer_id: null,
+                order_type: 'voice',
+                total_amount
+            }])
+            .select()
+            .single();
+
+        if (orderError) {
+            console.error('Voice Order Creation Error:', orderError);
+            return res.status(500).json({ error: 'Failed to create voice order.' });
+        }
+
+        const order_id = orderData.id;
+
+        // 2. Insert order_items
+        const orderItemsToInsert = items.map(item => ({
+            order_id,
+            menu_id: item.id || null,
+            item_name: item.name || item.item_name,
+            quantity: item.quantity,
+            price: item.price,
+            subtotal: item.price * item.quantity
+        }));
+
+        const { error: itemsError } = await supabase
+            .from('order_items')
+            .insert(orderItemsToInsert);
+
+        if (itemsError) {
+            console.error('Voice Order Items Error:', itemsError);
+            return res.status(500).json({ error: 'Failed to save voice order items.' });
+        }
+
+        return res.status(201).json({
+            message: 'Voice order placed successfully',
+            order_id,
+            order_type: 'voice',
+            restaurant_id,
+            total_amount,
+            created_at: orderData.created_at
+        });
+
+    } catch (error) {
+        console.error('Voice Order Error:', error);
+        res.status(500).json({ error: 'Internal server error.' });
+    }
+};
+
 exports.getOrder = async (req, res) => {
     try {
         const userId = req.user.userId;
