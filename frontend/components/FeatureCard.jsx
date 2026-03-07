@@ -2,13 +2,13 @@ export default function FeatureCard({ icon, title, description, badge, featured,
     return (
         <button
             onClick={onClick}
-            className={`group relative text-left w-full p-8 rounded-2xl bg-white border shadow-sm transition-all duration-300 ease-in-out cursor-pointer flex flex-col h-full hover:-translate-y-1 hover:shadow-md ${featured
-                ? 'border-[#FF9F43] hover:bg-[#FFF7ED] ring-1 ring-[#FF9F43]/20'
-                : 'border-slate-200 hover:bg-slate-50'
+            className={`group relative text-left w-full p-8 rounded-2xl bg-white border shadow-sm transition-all duration-300 ease-in-out cursor-pointer flex flex-col h-full hover:-translate-y-2 hover:shadow-[0_8px_30px_rgba(255,107,44,0.15)] ${featured
+                ? 'border-[#FF9F43] hover:bg-[#FFF7ED] hover:border-[#FF6B2C]'
+                : 'border-slate-200 hover:bg-white hover:border-slate-300'
                 }`}
         >
             {featured && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[11px] font-bold py-1 px-4 bg-[#FF6B2C] text-white rounded-full whitespace-nowrap shadow-[0_4px_12px_rgba(255,107,44,0.3)]">
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[11px] font-bold py-1 px-4 bg-gradient-to-r from-[#FF6B2C] to-[#FF9F43] text-white rounded-full whitespace-nowrap shadow-[0_4px_12px_rgba(255,107,44,0.4)]">
                     {featuredLabel || "Featured"}
                 </span>
             )}
