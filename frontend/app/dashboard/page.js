@@ -181,7 +181,10 @@ export default function Dashboard() {
                     ].map((item) => (
                         <button
                             key={item.id}
-                            onClick={() => setActiveNav(item.id)}
+                            onClick={() => {
+                                if (item.onClick) item.onClick();
+                                else setActiveNav(item.id);
+                            }}
                             className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl text-base font-bold text-left transition-all duration-200 border cursor-pointer ${activeNav === item.id
                                 ? 'bg-white border-slate-200 text-[#FF6B2C] shadow-sm'
                                 : 'border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-200/50'
