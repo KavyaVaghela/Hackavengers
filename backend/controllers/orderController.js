@@ -88,31 +88,44 @@ exports.createManualOrder = async (req, res) => {
 exports.createVoiceOrder = async (req, res) => {
     try {
         const userId = req.user.userId;
-        const { data: restaurant } = await supabase.from('restaurants').select('id').eq('userId', userId).single();
-        if (!restaurant) return res.status(404).json({ error: 'Restaurant not found for this user.' });
+
+        // Get restaurant for this user
+        const { data: restaurant, error: restError } = await supabase
+            .from('restaurants')
+            .select('id')
+            .eq('userId', userId)
+            .single();
+
+        if (restError || !restaurant) {
+            console.error('Voice Order - Restaurant not found:', restError);
+            return res.status(404).json({ error: 'Restaurant not found for this user.' });
+        }
 
         const restaurant_id = restaurant.id;
-        const { items, total_amount } = req.body;
+        const { items, total_amount, order_type: clientOrderType } = req.body;
 
         if (!items || items.length === 0) {
             return res.status(400).json({ error: 'Voice order must contain at least one item.' });
         }
 
-        // 1. Insert order with order_type = 'voice'
+        // Use 'ai_order' so analytics dashboard can filter it
+        const order_type = clientOrderType || 'ai_order';
+
+        // 1. Insert order
         const { data: orderData, error: orderError } = await supabase
             .from('orders')
             .insert([{
                 restaurant_id,
-                customer_id: null,
-                order_type: 'voice',
-                total_amount
+                customer_name: 'Voice Customer',
+                order_type,
+                total_amount: parseFloat(total_amount) || 0,
             }])
             .select()
             .single();
 
         if (orderError) {
-            console.error('Voice Order Creation Error:', orderError);
-            return res.status(500).json({ error: 'Failed to create voice order.' });
+            console.error('Voice Order Creation Error — Supabase:', JSON.stringify(orderError));
+            return res.status(500).json({ error: 'Failed to create voice order.', detail: orderError.message });
         }
 
         const order_id = orderData.id;
@@ -121,10 +134,10 @@ exports.createVoiceOrder = async (req, res) => {
         const orderItemsToInsert = items.map(item => ({
             order_id,
             menu_id: item.id || null,
-            item_name: item.name || item.item_name,
-            quantity: item.quantity,
-            price: item.price,
-            subtotal: item.price * item.quantity
+            item_name: item.name || item.item_name || 'Unknown Item',
+            quantity: parseInt(item.quantity) || 1,
+            price: parseFloat(item.price) || 0,
+            subtotal: (parseFloat(item.price) || 0) * (parseInt(item.quantity) || 1)
         }));
 
         const { error: itemsError } = await supabase
@@ -132,22 +145,22 @@ exports.createVoiceOrder = async (req, res) => {
             .insert(orderItemsToInsert);
 
         if (itemsError) {
-            console.error('Voice Order Items Error:', itemsError);
-            return res.status(500).json({ error: 'Failed to save voice order items.' });
+            console.error('Voice Order Items Error — Supabase:', JSON.stringify(itemsError));
+            return res.status(500).json({ error: 'Failed to save order items.', detail: itemsError.message });
         }
 
         return res.status(201).json({
             message: 'Voice order placed successfully',
             order_id,
-            order_type: 'voice',
+            order_type,
             restaurant_id,
             total_amount,
             created_at: orderData.created_at
         });
 
     } catch (error) {
-        console.error('Voice Order Error:', error);
-        res.status(500).json({ error: 'Internal server error.' });
+        console.error('Voice Order Uncaught Error:', error);
+        res.status(500).json({ error: 'Internal server error.', detail: error.message });
     }
 };
 

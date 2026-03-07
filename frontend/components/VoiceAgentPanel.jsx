@@ -157,6 +157,7 @@ export default function VoiceAgentPanel({ onOrderPlaced }) {
     const [restaurantName, setRestaurantName] = useState('our restaurant');
     const [listenHint, setListenHint] = useState('');
     const [retryCount, setRetryCount] = useState(0);
+    const [isMicActive, setIsMicActive] = useState(false);
 
     const menuRef = useRef([]);
     const upsellRef = useRef([]);
@@ -164,6 +165,7 @@ export default function VoiceAgentPanel({ onOrderPlaced }) {
     const orderItemsRef = useRef([]);
     const recognitionRef = useRef(null);
     const listeningRef = useRef(false);
+    const processingRef = useRef(false); // prevents double-fire from onresult
 
     const updateState = useCallback((s) => {
         stateRef.current = s;
@@ -191,7 +193,11 @@ export default function VoiceAgentPanel({ onOrderPlaced }) {
                     axios.get(`${API_URL}/api/menu`, { headers: h }).catch(() => ({ data: [] })),
                     axios.get(`${API_URL}/api/upsells`, { headers: h }).catch(() => ({ data: [] })),
                 ]);
-                setRestaurantName(nameRes.data?.restaurant?.name || 'our restaurant');
+                setRestaurantName(
+                    nameRes.data?.restaurant?.restaurantName ||
+                    nameRes.data?.restaurant?.name ||
+                    'our restaurant'
+                );
                 menuRef.current = menuRes.data || [];
                 upsellRef.current = upsellRes.data || [];
             } catch (e) { console.error('Init error', e); }
@@ -203,12 +209,16 @@ export default function VoiceAgentPanel({ onOrderPlaced }) {
     const startListening = useCallback((hint = '') => {
         if (listeningRef.current) return; // already listening
         listeningRef.current = true;
+        setIsMicActive(true);
         setTranscript('');
         setNormalized('');
         setListenHint(hint);
 
         const onResult = (text) => {
+            if (processingRef.current) return; // block double-fire
+            processingRef.current = true;
             listeningRef.current = false;
+            setIsMicActive(false);
             setRetryCount(0);
             setTranscript(text);
             const norm = normalizeSpeech(text);
@@ -216,9 +226,16 @@ export default function VoiceAgentPanel({ onOrderPlaced }) {
             handleResult(text, norm);
         };
 
-        const onEnd = () => { listeningRef.current = false; };
+        const onEnd = () => {
+            listeningRef.current = false;
+            setIsMicActive(false);
+            // Reset processing guard after a short delay so next session starts clean
+            setTimeout(() => { processingRef.current = false; }, 300);
+        };
         const onError = (errCode) => {
             listeningRef.current = false;
+            processingRef.current = false;
+            setIsMicActive(false);
             // On no-speech or aborted, retry automatically up to 2 times
             if (errCode === 'no-speech' || errCode === 'aborted') {
                 setRetryCount(c => {
@@ -240,7 +257,10 @@ export default function VoiceAgentPanel({ onOrderPlaced }) {
             return;
         }
         recognitionRef.current = r;
-        try { r.start(); } catch (e) { listeningRef.current = false; }
+        try {
+            processingRef.current = false; // reset for new session
+            r.start();
+        } catch (e) { listeningRef.current = false; }
     }, []); // eslint-disable-line
 
     // ── Handle YES/NO intent plus order listening ────────────────────────────
@@ -421,6 +441,7 @@ export default function VoiceAgentPanel({ onOrderPlaced }) {
         window.speechSynthesis.cancel();
         if (recognitionRef.current) { try { recognitionRef.current.abort(); } catch { } }
         listeningRef.current = false;
+        setIsMicActive(false);
         setOrderItems([]);
         setDetectedItems([]);
         setUpsellSuggestion(null);
@@ -475,15 +496,15 @@ export default function VoiceAgentPanel({ onOrderPlaced }) {
                                 : isListeningState ? 'bg-red-50 text-red-600'
                                     : isActive ? 'bg-blue-50 text-blue-600'
                                         : 'bg-slate-100 text-slate-500'}`}>
-                        {isListeningState && <span className="w-2 h-2 rounded-full bg-current animate-pulse" />}
+                        {isListeningState && isMicActive && <span className="w-2 h-2 rounded-full bg-current animate-pulse" />}
                         {stateLabel[agentState] || agentState}
                     </div>
                 </div>
 
                 {/* Message bubble */}
                 <div className={`flex items-start gap-3 p-4 rounded-2xl mb-5 ${agentState === STATE.SUCCESS ? 'bg-emerald-50 border border-emerald-100'
-                        : agentState === STATE.ERROR ? 'bg-red-50 border border-red-100'
-                            : 'bg-slate-50 border border-slate-100'}`}>
+                    : agentState === STATE.ERROR ? 'bg-red-50 border border-red-100'
+                        : 'bg-slate-50 border border-slate-100'}`}>
                     <div className="w-8 h-8 rounded-full bg-white shadow-sm border border-slate-200 flex items-center justify-center flex-shrink-0 mt-0.5">
                         {agentState === STATE.SUCCESS ? <CheckCircle size={15} className="text-emerald-500" />
                             : agentState === STATE.ERROR ? <XCircle size={15} className="text-red-500" />
@@ -554,11 +575,23 @@ export default function VoiceAgentPanel({ onOrderPlaced }) {
                         </div>
                     ) : (
                         <>
-                            <div className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm ${isListeningState
-                                    ? 'bg-red-50 text-red-600 border-2 border-red-200 animate-pulse'
-                                    : 'bg-blue-50 text-blue-600 border border-blue-200'}`}>
-                                {isListeningState ? <><Mic size={16} /> Listening…</> : <><Volume2 size={16} /> Speaking…</>}
-                            </div>
+                            <button
+                                onClick={() => isListeningState ? startListening(listenHint) : null}
+                                className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm transition-all ${isListeningState && !isMicActive
+                                        ? 'bg-red-50 hover:bg-red-100 text-red-600 border-2 border-red-300 shadow-sm cursor-pointer'
+                                        : isListeningState && isMicActive
+                                            ? 'bg-red-50 text-red-600 border-2 border-red-200 cursor-default'
+                                            : 'bg-blue-50 text-blue-600 border border-blue-200 cursor-default'
+                                    }`}
+                            >
+                                {isListeningState && isMicActive ? (
+                                    <><Mic size={16} className="animate-pulse" /> Listening…</>
+                                ) : isListeningState && !isMicActive ? (
+                                    <><Mic size={16} /> Tap to Speak Again</>
+                                ) : (
+                                    <><Volume2 size={16} /> Speaking…</>
+                                )}
+                            </button>
                             <button onClick={resetCall}
                                 className="py-3.5 px-4 bg-white border border-slate-200 rounded-2xl text-slate-500 hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-all"
                                 title="End call">
