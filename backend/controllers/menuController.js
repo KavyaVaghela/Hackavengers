@@ -134,3 +134,36 @@ exports.searchMenu = async (req, res) => {
         res.status(500).json({ error: 'Internal server error during search.' });
     }
 };
+
+// GET /api/menu — fetch all menu items for the authenticated restaurant
+exports.getMenu = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { data: restaurant } = await supabase
+            .from('restaurants')
+            .select('id')
+            .eq('userId', userId)
+            .single();
+
+        if (!restaurant) {
+            return res.status(404).json({ error: 'Restaurant not found for this user.' });
+        }
+
+        const { data, error } = await supabase
+            .from('menus')
+            .select('id, item_name, price, category, menu_type')
+            .eq('restaurant_id', restaurant.id)
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Get Menu Error:', error);
+            return res.status(500).json({ error: 'Failed to fetch menu items.' });
+        }
+
+        return res.status(200).json(data || []);
+    } catch (error) {
+        console.error('Get Menu Error:', error);
+        res.status(500).json({ error: 'Internal server error.' });
+    }
+};
+
