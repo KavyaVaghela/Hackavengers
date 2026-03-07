@@ -104,25 +104,33 @@ export default function VoiceOrderPanel() {
     const recognitionRef = useRef(null);
     const menuListRef = useRef([]);
     const upsellRulesRef = useRef([]);
+    const [menuLoaded, setMenuLoaded] = useState(false);
+    const [menuError, setMenuError] = useState(false);
 
-    // ── Fetch menu + upsell rules on mount ──
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const token = localStorage.getItem('token');
-                if (!token) return;
-                const [menuRes, upsellRes] = await Promise.all([
-                    axios.get(`${API_URL}/api/menu`, { headers: { Authorization: `Bearer ${token}` } }),
-                    axios.get(`${API_URL}/api/upsells`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: [] }))
-                ]);
-                menuListRef.current = menuRes.data || [];
-                upsellRulesRef.current = upsellRes.data || [];
-            } catch (err) {
-                console.error('Failed to fetch AI call data:', err);
-            }
-        };
-        fetchData();
+    // Fetch menu + upsell rules — also called before each recording to ensure freshness
+    const fetchMenuData = useCallback(async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+            const [menuRes, upsellRes] = await Promise.all([
+                axios.get(`${API_URL}/api/menu`, { headers: { Authorization: `Bearer ${token}` } })
+                    .catch(e => { console.warn('Menu fetch failed:', e.message); return { data: [] }; }),
+                axios.get(`${API_URL}/api/upsells`, { headers: { Authorization: `Bearer ${token}` } })
+                    .catch(() => ({ data: [] }))
+            ]);
+            const items = menuRes.data || [];
+            menuListRef.current = items;
+            upsellRulesRef.current = upsellRes.data || [];
+            setMenuLoaded(items.length > 0);
+            setMenuError(items.length === 0);
+        } catch (err) {
+            console.error('Failed to fetch AI call data:', err);
+            setMenuError(true);
+        }
     }, []);
+
+    useEffect(() => { fetchMenuData(); }, [fetchMenuData]);
+
 
     // ── SpeechRecognition setup — runs once on mount ──
     useEffect(() => {
@@ -168,7 +176,11 @@ export default function VoiceOrderPanel() {
     }, []);
 
     // ── Controls ──
-    const startListening = useCallback(() => {
+    const startListening = useCallback(async () => {
+        // Re-fetch menu if it failed or hasn't loaded yet
+        if (!menuLoaded) {
+            await fetchMenuData();
+        }
         setTranscript('');
         setNormalizedTranscript('');
         setMatchedItems([]);
@@ -177,7 +189,7 @@ export default function VoiceOrderPanel() {
         setOrderStatus(null);
         setError(null);
         try { recognitionRef.current?.start(); } catch { /* already started */ }
-    }, []);
+    }, [menuLoaded, fetchMenuData]);
 
     const stopListening = useCallback(() => {
         recognitionRef.current?.stop();
@@ -265,6 +277,13 @@ export default function VoiceOrderPanel() {
             {/* Error Banner */}
             {error && (
                 <div className="mb-4 p-4 bg-red-50 text-red-600 rounded-xl text-sm font-medium border border-red-100">{error}</div>
+            )}
+
+            {/* Menu Load Warning */}
+            {menuError && !error && (
+                <div className="mb-4 p-3 bg-amber-50 text-amber-700 rounded-xl text-sm font-medium border border-amber-200 flex items-center gap-2">
+                    ⚠ Menu data could not be loaded from the server. Item detection may not work. Tap &quot;Start Voice Order&quot; to retry.
+                </div>
             )}
 
             {/* Success Banner */}
@@ -403,8 +422,8 @@ export default function VoiceOrderPanel() {
                                             onClick={handleConfirmOrder}
                                             disabled={orderStatus === 'loading'}
                                             className={`flex-1 py-3 rounded-xl font-bold transition-all shadow-md flex items-center justify-center gap-2 ${orderStatus === 'error'
-                                                    ? 'bg-red-100 text-red-700 border border-red-200'
-                                                    : 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/20'
+                                                ? 'bg-red-100 text-red-700 border border-red-200'
+                                                : 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/20'
                                                 }`}
                                         >
                                             {orderStatus === 'loading' && <Loader2 size={16} className="animate-spin" />}
