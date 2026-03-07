@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import fuzz from 'fuzzball';
-import { Mic, Square, Loader2, Volume2, ShoppingBag } from 'lucide-react';
+import { Mic, Square, Loader2, Volume2, ShoppingBag, Sparkles } from 'lucide-react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -114,25 +114,47 @@ export default function VoiceOrderPanel() {
     const [matchedItems, setMatchedItems] = useState([]);
     const [detectedModifiers, setDetectedModifiers] = useState({ size: null, spice: null, removals: [] });
     const [menuList, setMenuList] = useState([]);
+    const [upsellRules, setUpsellRules] = useState([]);
+    const [upsellSuggestion, setUpsellSuggestion] = useState(null);
     const [error, setError] = useState(null);
     const recognitionRef = useRef(null);
 
-    // Initial Fetch of Menu
+    // Initial Fetch of Menu and Upsell Rules
     useEffect(() => {
-        const fetchMenu = async () => {
+        const fetchData = async () => {
             try {
                 const token = localStorage.getItem('token');
                 if (!token) return;
-                const response = await axios.get(`${API_URL}/api/menu`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                setMenuList(response.data);
+
+                const [menuRes, upsellRes] = await Promise.all([
+                    axios.get(`${API_URL}/api/menu`, { headers: { Authorization: `Bearer ${token}` } }),
+                    axios.get(`${API_URL}/api/upsells`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: [] }))
+                ]);
+
+                setMenuList(menuRes.data);
+                setUpsellRules(upsellRes.data || []);
             } catch (err) {
-                console.error("Failed to fetch menu for AI call", err);
+                console.error("Failed to fetch data for AI call", err);
             }
         };
-        fetchMenu();
+        fetchData();
     }, []);
+
+    const suggestUpsell = (orderItems, rules) => {
+        if (!orderItems.length || !rules.length) return null;
+
+        // Find the most appropriate upsell based on priority (first match)
+        for (const rule of rules) {
+            // Check if triggers exist in the order, and the suggestion does not already exist
+            const hasTrigger = orderItems.some(i => i.item_name.toLowerCase().includes(rule.trigger_item.toLowerCase()));
+            const hasSuggestion = orderItems.some(i => i.item_name.toLowerCase().includes(rule.suggest_item.toLowerCase()));
+
+            if (hasTrigger && !hasSuggestion) {
+                return rule.suggest_item;
+            }
+        }
+        return null;
+    };
 
     useEffect(() => {
         // Check for browser support
@@ -165,7 +187,13 @@ export default function VoiceOrderPanel() {
             setTranscript(currentTranscript);
             const normalized = normalizeSpeech(currentTranscript);
             setNormalizedTranscript(normalized);
-            setMatchedItems(matchMenuItems(normalized, menuList));
+
+            const newlyMatched = matchMenuItems(normalized, menuList);
+            setMatchedItems(newlyMatched);
+
+            // Suggest Upsells
+            setUpsellSuggestion(suggestUpsell(newlyMatched, upsellRules));
+
             setDetectedModifiers(detectModifiers(normalized));
         };
 
@@ -192,6 +220,7 @@ export default function VoiceOrderPanel() {
         setTranscript('');
         setNormalizedTranscript('');
         setMatchedItems([]);
+        setUpsellSuggestion(null);
         setDetectedModifiers({ size: null, spice: null, removals: [] });
         setError(null);
         if (recognitionRef.current) {
@@ -208,6 +237,26 @@ export default function VoiceOrderPanel() {
             recognitionRef.current.stop();
             setIsListening(false);
         }
+    };
+
+    const handleConfirmOrder = () => {
+        alert("Order Confirmed! Sending to Kitchen...");
+        // In real app: POST to /api/orders
+        setTranscript('');
+        setMatchedItems([]);
+        setUpsellSuggestion(null);
+        setDetectedModifiers({ size: null, spice: null, removals: [] });
+    };
+
+    const handleCancelOrder = () => {
+        setTranscript('');
+        setMatchedItems([]);
+        setUpsellSuggestion(null);
+        setDetectedModifiers({ size: null, spice: null, removals: [] });
+    };
+
+    const calculateTotal = () => {
+        return matchedItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
     };
 
     return (
@@ -294,6 +343,67 @@ export default function VoiceOrderPanel() {
                                                 No <span className="capitalize">{removal}</span>
                                             </span>
                                         ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {upsellSuggestion && (
+                                <div className="mt-2 flex items-center gap-3 p-4 bg-amber-50 rounded-xl border border-amber-200 shadow-sm animate-fade-in">
+                                    <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                                        <Sparkles size={16} className="text-amber-600" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-xs font-bold text-amber-700 uppercase tracking-wider mb-0.5">Recommended Add-on</p>
+                                        <p className="text-sm text-amber-900 font-medium">Would you like to add <span className="font-extrabold">{upsellSuggestion}</span> with your order?</p>
+                                    </div>
+                                    <button
+                                        className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs font-bold transition-colors"
+                                        onClick={() => {
+                                            const matched = menuList.find(i => i.item_name.toLowerCase().includes(upsellSuggestion.toLowerCase()));
+                                            if (matched) {
+                                                setMatchedItems(prev => [...prev, { ...matched, quantity: 1 }]);
+                                                setUpsellSuggestion(null);
+                                            }
+                                        }}
+                                    >
+                                        Add Item
+                                    </button>
+                                </div>
+                            )}
+
+                            {matchedItems.length > 0 && !isListening && (
+                                <div className="mt-6 pt-6 border-t-2 border-dashed border-slate-200">
+                                    <h3 className="font-extrabold text-[#0F172A] mb-4 text-center">Order Summary</h3>
+                                    <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-2">
+                                        {matchedItems.map((item, idx) => (
+                                            <div key={idx} className="flex justify-between text-sm py-1 border-b border-slate-100 last:border-0">
+                                                <span className="font-semibold text-slate-700">
+                                                    {item.quantity} × {item.item_name}
+                                                </span>
+                                                <span className="font-bold text-slate-800">
+                                                    ₹{item.price * item.quantity}
+                                                </span>
+                                            </div>
+                                        ))}
+                                        <div className="flex justify-between text-lg pt-2 mt-2 border-t border-slate-300">
+                                            <span className="font-extrabold text-slate-900">Total Price:</span>
+                                            <span className="font-black text-[#FF6B2C]">₹{calculateTotal()}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-3 mt-6">
+                                        <button
+                                            onClick={handleCancelOrder}
+                                            className="flex-1 py-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl font-bold transition-colors shadow-sm"
+                                        >
+                                            Cancel Order
+                                        </button>
+                                        <button
+                                            onClick={handleConfirmOrder}
+                                            className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold transition-colors shadow-emerald-500/20 shadow-md flex items-center justify-center gap-2"
+                                        >
+                                            Confirm Order
+                                        </button>
                                     </div>
                                 </div>
                             )}
