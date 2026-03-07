@@ -3,9 +3,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { ArrowLeft, Stethoscope, Loader2, RefreshCw } from 'lucide-react';
-import PriceSuggestionCard from '@/components/menu-doctor/PriceSuggestionCard';
-import FestivalOfferCard from '@/components/menu-doctor/FestivalOfferCard';
-import MenuSuggestionCard from '@/components/menu-doctor/MenuSuggestionCard';
+import PriceSuggestionCard from '@/components/menu-doctor-fix/PriceSuggestionCard';
+import FestivalOfferCard from '@/components/menu-doctor-fix/FestivalOfferCard';
+import MenuSuggestionCard from '@/components/menu-doctor-fix/MenuSuggestionCard';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
