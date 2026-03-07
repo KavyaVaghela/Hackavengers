@@ -176,6 +176,7 @@ export default function Dashboard() {
                         { id: 'overview', icon: <LayoutDashboard size={18} />, label: 'Overview' },
                         { id: 'orders', icon: <Receipt size={18} />, label: 'Orders' },
                         { id: 'menu', icon: <MenuIcon size={18} />, label: 'Menu' },
+                        { id: 'menu-doctor', icon: <Sparkles size={18} />, label: 'Menu Doctor', onClick: () => router.push('/dashboard/menu-doctor') },
                         { id: 'settings', icon: <Settings size={18} />, label: 'Settings' },
                     ].map((item) => (
                         <button
