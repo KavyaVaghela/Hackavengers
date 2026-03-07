@@ -22,6 +22,66 @@ const normalizeSpeech = (text) => {
     return normalized;
 };
 
+const WORD_TO_NUMBER = {
+    'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
+    'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10,
+    'ek': 1, 'do': 2, 'teen': 3, 'char': 4, 'paanch': 5,
+    'chhe': 6, 'saat': 7, 'aath': 8, 'nau': 9, 'das': 10
+};
+
+const extractQuantity = (transcript, itemName) => {
+    if (!transcript) return 1;
+    const words = transcript.split(' ');
+    const nameWords = itemName.toLowerCase().split(' ');
+
+    // Find where the item name starts in the transcript
+    const idx = words.findIndex(w => nameWords[0].includes(w) || w.includes(nameWords[0]));
+
+    if (idx > 0) {
+        // Check the word immediately before the item
+        for (let i = idx - 1; i >= Math.max(0, idx - 2); i--) {
+            const word = words[i];
+            if (!isNaN(parseInt(word))) {
+                return parseInt(word);
+            }
+            if (WORD_TO_NUMBER[word]) {
+                return WORD_TO_NUMBER[word];
+            }
+        }
+    }
+    return 1;
+};
+
+const detectModifiers = (transcript) => {
+    const modifiers = {
+        size: null,
+        spice: null,
+        removals: []
+    };
+    if (!transcript) return modifiers;
+
+    const t = ' ' + transcript + ' ';
+
+    // Sizes
+    if (t.includes(' small ')) modifiers.size = 'small';
+    else if (t.includes(' medium ')) modifiers.size = 'medium';
+    else if (t.includes(' large ')) modifiers.size = 'large';
+
+    // Spice
+    if (t.includes(' extra spicy ') || t.includes(' bahut spicy ') || t.includes(' jyada spicy ')) modifiers.spice = 'extra spicy';
+    else if (t.includes(' spicy ') || t.includes(' teekha ')) modifiers.spice = 'spicy';
+    else if (t.includes(' mild ') || t.includes(' kam spicy ') || t.includes(' no spicy ')) modifiers.spice = 'mild';
+
+    // Removals (no onion, bina cheese, without tomato)
+    const removalRegex = /\b(no|bina|without)\s+(\w+)\b/gi;
+    let match;
+    while ((match = removalRegex.exec(transcript)) !== null) {
+        modifiers.removals.push(match[2].toLowerCase());
+    }
+
+    return modifiers;
+};
+
 const matchMenuItems = (text, menu) => {
     if (!text || !menu || menu.length === 0) return [];
 
@@ -38,7 +98,8 @@ const matchMenuItems = (text, menu) => {
         if (score > 85) {
             // Prevent duplicate detections of the same item name in a single breath
             if (!detected.find(d => d.id === item.id)) {
-                detected.push({ ...item, quantity: 1 });
+                const quantity = extractQuantity(text, item.item_name);
+                detected.push({ ...item, quantity });
             }
         }
     });
@@ -51,6 +112,7 @@ export default function VoiceOrderPanel() {
     const [transcript, setTranscript] = useState('');
     const [normalizedTranscript, setNormalizedTranscript] = useState('');
     const [matchedItems, setMatchedItems] = useState([]);
+    const [detectedModifiers, setDetectedModifiers] = useState({ size: null, spice: null, removals: [] });
     const [menuList, setMenuList] = useState([]);
     const [error, setError] = useState(null);
     const recognitionRef = useRef(null);
@@ -104,6 +166,7 @@ export default function VoiceOrderPanel() {
             const normalized = normalizeSpeech(currentTranscript);
             setNormalizedTranscript(normalized);
             setMatchedItems(matchMenuItems(normalized, menuList));
+            setDetectedModifiers(detectModifiers(normalized));
         };
 
         recognition.onerror = (event) => {
@@ -129,6 +192,7 @@ export default function VoiceOrderPanel() {
         setTranscript('');
         setNormalizedTranscript('');
         setMatchedItems([]);
+        setDetectedModifiers({ size: null, spice: null, removals: [] });
         setError(null);
         if (recognitionRef.current) {
             try {
@@ -199,11 +263,36 @@ export default function VoiceOrderPanel() {
                                         {matchedItems.map((item, idx) => (
                                             <div key={idx} className="flex justify-between items-center p-3 border border-blue-100 bg-blue-50/50 rounded-xl">
                                                 <div className="flex flex-col">
-                                                    <span className="font-bold text-slate-800">{item.item_name}</span>
+                                                    <span className="font-bold text-slate-800">{item.item_name} &times; {item.quantity}</span>
                                                     <span className="text-xs font-semibold text-slate-500">{item.category}</span>
                                                 </div>
-                                                <span className="font-extrabold text-[#FF6B2C]">₹{item.price}</span>
+                                                <span className="font-extrabold text-[#FF6B2C]">₹{item.price * item.quantity}</span>
                                             </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {(detectedModifiers.size || detectedModifiers.spice || detectedModifiers.removals.length > 0) && (
+                                <div className="pt-4 border-t border-slate-100">
+                                    <p className="text-xs font-bold text-purple-500 uppercase tracking-widest mb-3 flex items-center gap-1.5 border-b border-transparent">
+                                        Order Modifiers
+                                    </p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {detectedModifiers.size && (
+                                            <span className="bg-purple-50 text-purple-700 px-3 py-1.5 rounded-full text-[13px] font-bold border border-purple-100/50 shadow-sm">
+                                                Size: <span className="capitalize">{detectedModifiers.size}</span>
+                                            </span>
+                                        )}
+                                        {detectedModifiers.spice && (
+                                            <span className="bg-red-50 text-red-700 px-3 py-1.5 rounded-full text-[13px] font-bold border border-red-100/50 shadow-sm">
+                                                Spice: <span className="capitalize">{detectedModifiers.spice}</span>
+                                            </span>
+                                        )}
+                                        {detectedModifiers.removals.map((removal, idx) => (
+                                            <span key={idx} className="bg-slate-50 text-slate-600 px-3 py-1.5 rounded-full text-[13px] font-bold border border-slate-200 shadow-sm">
+                                                No <span className="capitalize">{removal}</span>
+                                            </span>
                                         ))}
                                     </div>
                                 </div>
