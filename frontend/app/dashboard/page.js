@@ -6,7 +6,7 @@ import axios from 'axios';
 import {
     ChefHat, UserCircle, LogOut, Home,
     Sparkles, Store, User, FileText, Phone, Mail, Globe, ChevronDown,
-    LayoutDashboard, Receipt, Menu as MenuIcon, Settings, X, UploadCloud, Loader2
+    LayoutDashboard, Receipt, Menu as MenuIcon, Settings, X, UploadCloud, Loader2, LineChart
 } from 'lucide-react';
 import TRANSLATIONS from './translations';
 import FeatureCard from '../../components/FeatureCard';
@@ -177,6 +177,7 @@ export default function Dashboard() {
                         { id: 'orders', icon: <Receipt size={18} />, label: 'Orders' },
                         { id: 'menu', icon: <MenuIcon size={18} />, label: 'Menu' },
                         { id: 'menu-doctor', icon: <Sparkles size={18} />, label: 'Menu Doctor', onClick: () => router.push('/dashboard/menu-doctor') },
+                        { id: 'business-insights', icon: <LineChart size={18} />, label: 'Business Insights', onClick: () => router.push('/dashboard/business-insights') },
                         { id: 'settings', icon: <Settings size={18} />, label: 'Settings' },
                     ].map((item) => (
                         <button
