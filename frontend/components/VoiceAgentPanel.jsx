@@ -107,6 +107,7 @@ export default function VoiceAgentPanel({ onOrderPlaced }) {
     const upsellRef = useRef([]);
     const recognitionRef = useRef(null);
     const stateRef = useRef(STATE.IDLE);
+    const processingRef = useRef(false); // prevents double-fire from SpeechRecognition
 
     // keep stateRef in sync
     const updateState = useCallback((s) => {
@@ -145,20 +146,29 @@ export default function VoiceAgentPanel({ onOrderPlaced }) {
         r.continuous = false;
         r.interimResults = false;
         r.onresult = (e) => {
-            const text = e.results[0][0].transcript;
+            // Guard: ignore if we're already processing a result
+            if (processingRef.current) return;
+            processingRef.current = true;
+
+            // Only use the FINAL result (index 0 after recognition stops)
+            const result = e.results[e.results.length - 1];
+            if (!result.isFinal) { processingRef.current = false; return; }
+
+            const text = result[0].transcript;
             setTranscript(text);
             const norm = normalizeSpeech(text);
             setNormalized(norm);
             handleResult(text, norm);
         };
-        r.onerror = () => { setTranscript(''); };
-        r.onend = () => { };
+        r.onerror = () => { setTranscript(''); processingRef.current = false; };
+        r.onend = () => { processingRef.current = false; };
         recognitionRef.current = r;
         return () => r.abort();
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     // ── Start listening helper ──
     const startListening = useCallback(() => {
+        processingRef.current = false; // reset guard for new recording
         setTranscript('');
         setNormalized('');
         try { recognitionRef.current?.start(); } catch { /* already started */ }
@@ -414,8 +424,8 @@ export default function VoiceAgentPanel({ onOrderPlaced }) {
 
                 {/* Agent message bubble */}
                 <div className={`flex items-start gap-3 p-4 rounded-2xl mb-5 transition-all ${agentState === STATE.SUCCESS ? 'bg-emerald-50 border border-emerald-100'
-                        : agentState === STATE.ERROR ? 'bg-red-50 border border-red-100'
-                            : 'bg-slate-50 border border-slate-100'
+                    : agentState === STATE.ERROR ? 'bg-red-50 border border-red-100'
+                        : 'bg-slate-50 border border-slate-100'
                     }`}>
                     <div className="w-8 h-8 rounded-full bg-white shadow-sm border border-slate-200 flex items-center justify-center flex-shrink-0 mt-0.5">
                         {agentState === STATE.SUCCESS ? <CheckCircle size={15} className="text-emerald-500" />
@@ -468,8 +478,8 @@ export default function VoiceAgentPanel({ onOrderPlaced }) {
                     ) : (
                         <>
                             <div className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm ${isListeningState
-                                    ? 'bg-red-50 text-red-600 border border-red-200 animate-pulse'
-                                    : 'bg-blue-50 text-blue-600 border border-blue-200'
+                                ? 'bg-red-50 text-red-600 border border-red-200 animate-pulse'
+                                : 'bg-blue-50 text-blue-600 border border-blue-200'
                                 }`}>
                                 {isListeningState ? <><Mic size={16} /> Listening…</> : <><Volume2 size={16} /> Speaking…</>}
                             </div>
