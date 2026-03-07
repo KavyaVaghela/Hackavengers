@@ -205,7 +205,7 @@ export default function Dashboard() {
                                 badge={cards[2].badge}
                                 featured={cards[2].featured}
                                 featuredLabel={cards[2].featuredLabel}
-                                onClick={() => router.push('/dashboard/menu-doctor')}
+                                onClick={() => router.push('/dashboard/ai-call')}
                             />
                             <FeatureCard
                                 icon={cards[4].emoji}
@@ -219,7 +219,7 @@ export default function Dashboard() {
                                 title={cards[3].title}
                                 description={cards[3].desc}
                                 badge={cards[3].badge}
-                                onClick={() => router.push('/dashboard/menu')}
+                                onClick={() => router.push('/dashboard/menu-doctor')}
                             />
                             {/* Feedback form as 6th card to balance grid */}
                             <FeatureCard icon="💬" title={t.feedbackTitle} description={t.feedbackDesc} badge={t.feedbackBadge} />
