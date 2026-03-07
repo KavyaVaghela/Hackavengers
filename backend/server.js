@@ -10,6 +10,7 @@ const orderRoutes = require('./routes/order');
 const menuDoctorRoutes = require('./routes/menuDoctor');
 const insightsRoutes = require('./routes/insights');
 const upsellRoutes = require('./routes/upsell');
+const analyticsRoutes = require('./routes/analytics');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -26,6 +27,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/menu-doctor', menuDoctorRoutes);
 app.use('/api/insights', insightsRoutes);
 app.use('/api/upsells', upsellRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 app.get('/', (req, res) => {
     res.send('PetPooja API is running');

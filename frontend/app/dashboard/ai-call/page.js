@@ -1,10 +1,18 @@
 'use client';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Bot, PhoneCall } from 'lucide-react';
-import VoiceOrderPanel from '@/components/VoiceOrderPanel';
+import { ArrowLeft, Bot } from 'lucide-react';
+import VoiceAgentPanel from '@/components/VoiceAgentPanel';
+import AIAnalyticsCard from '@/components/AIAnalyticsCard';
 
 export default function AICallPage() {
     const router = useRouter();
+    const [analyticsRefresh, setAnalyticsRefresh] = useState(0);
+
+    const handleOrderPlaced = () => {
+        // Trigger analytics card to refetch
+        setAnalyticsRefresh(v => v + 1);
+    };
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] font-sans pb-20">
@@ -35,33 +43,44 @@ export default function AICallPage() {
                 </div>
             </header>
 
-            {/* Main Content */}
-            <main className="max-w-4xl mx-auto px-6 pt-12">
-                <div className="mb-10 text-center">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-orange-100 text-orange-500 mb-6 shadow-sm border border-orange-200">
-                        <PhoneCall size={28} />
+            <main className="max-w-4xl mx-auto px-6 pt-8 space-y-8">
+
+                {/* Analytics section */}
+                <section className="bg-white border border-[#E2E8F0] rounded-3xl p-6 shadow-sm">
+                    <AIAnalyticsCard refreshTrigger={analyticsRefresh} />
+                </section>
+
+                {/* Divider */}
+                <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-slate-200" />
                     </div>
-                    <h2 className="text-3xl font-extrabold text-[#0F172A] mb-3">Incoming Call Simulator</h2>
-                    <p className="text-lg text-slate-500 max-w-xl mx-auto leading-relaxed">
-                        Test your restaurant's AI Voice Ordering system. Speak clearly into your microphone in English, Hindi, or Hinglish to see live parsing and text normalization in action.
-                    </p>
+                    <div className="relative flex justify-center">
+                        <span className="bg-[#F8FAFC] px-4 text-xs font-bold text-slate-400 uppercase tracking-widest">
+                            Voice Ordering
+                        </span>
+                    </div>
                 </div>
 
-                {/* The Component Container */}
-                <div className="bg-white p-2 rounded-[2rem] shadow-sm border border-slate-200">
-                    <VoiceOrderPanel />
-                </div>
+                {/* Voice agent */}
+                <section className="flex justify-center">
+                    <VoiceAgentPanel onOrderPlaced={handleOrderPlaced} />
+                </section>
 
-                {/* Information Card */}
-                <div className="mt-12 bg-slate-50 border border-slate-200 rounded-2xl p-6 shadow-inner">
-                    <h3 className="font-bold text-slate-800 mb-2">How this works:</h3>
-                    <ul className="list-disc pl-5 text-sm text-slate-600 space-y-2">
-                        <li>The system connects directly to your device's native browser microphone.</li>
-                        <li>It streams the audio through the Web Speech API and returns high-speed transcriptions.</li>
-                        <li>The <code className="bg-slate-200 px-1.5 py-0.5 rounded text-slate-800 font-mono text-xs">normalizeSpeech()</code> function instantly strips out conversational filler like "please", "dena", and "mujhe".</li>
-                        <li>The final normalized text is completely optimized and ready to be automatically sent to the LLM or POS API.</li>
-                    </ul>
-                </div>
+                {/* How it works */}
+                <section className="bg-slate-50 border border-slate-200 rounded-2xl p-6">
+                    <h3 className="font-bold text-slate-800 mb-3">How the AI Voice Copilot works:</h3>
+                    <ol className="list-decimal pl-5 text-sm text-slate-600 space-y-1.5">
+                        <li>Press <strong>Start AI Call</strong> — the AI greets you with your restaurant name</li>
+                        <li>Speak your order clearly, e.g. <em>"Ek veg burger aur ek coke"</em></li>
+                        <li>The AI detects items from your menu using fuzzy matching</li>
+                        <li>It confirms each item aloud and asks if you want more</li>
+                        <li>When done, it suggests popular combos (upsells)</li>
+                        <li>It reads the full order summary and asks for confirmation</li>
+                        <li>Say <strong>"Yes"</strong> — order is saved to Supabase with <code className="bg-slate-200 px-1 rounded text-xs">order_type = ai_order</code></li>
+                    </ol>
+                </section>
+
             </main>
         </div>
     );
