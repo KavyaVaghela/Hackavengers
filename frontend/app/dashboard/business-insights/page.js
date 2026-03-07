@@ -64,7 +64,8 @@ export default function BusinessInsightsPage() {
 
         } catch (err) {
             console.error('Failed to fetch Business Insights:', err);
-            setError('Could not load analytics data. Ensure you have processed orders first.');
+            const errMsg = err.response?.data?.error || err.message || 'Unknown error';
+            setError(`Could not load analytics. URL: ${API_URL} | Status: ${err.response?.status} | Error: ${errMsg}`);
         } finally {
             setLoading(false);
         }

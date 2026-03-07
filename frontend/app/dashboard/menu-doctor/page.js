@@ -32,7 +32,8 @@ export default function MenuDoctorPage() {
             setRecommendations(response.data);
         } catch (err) {
             console.error('Failed to fetch Menu Doctor data:', err);
-            setError('Could not load menu insights at this time.');
+            const errMsg = err.response?.data?.error || err.message || 'Unknown error';
+            setError(`Could not load insights. URL: ${API_URL} | Status: ${err.response?.status} | Error: ${errMsg}`);
         } finally {
             setLoading(false);
         }
