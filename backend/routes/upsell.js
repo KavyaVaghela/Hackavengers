@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const upsellController = require('../controllers/upsellController');
-const { protect } = require('../middleware/authMiddleware');
+const authMiddleware = require('../middleware/authMiddleware');
 
-router.get('/', protect, upsellController.getUpsells);
+router.get('/', authMiddleware, upsellController.getUpsells);
 
 module.exports = router;
