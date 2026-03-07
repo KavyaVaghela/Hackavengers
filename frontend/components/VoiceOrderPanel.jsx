@@ -1,6 +1,9 @@
-'use client';
 import { useState, useEffect, useRef } from 'react';
-import { Mic, Square, Loader2, Volume2 } from 'lucide-react';
+import axios from 'axios';
+import fuzz from 'fuzzball';
+import { Mic, Square, Loader2, Volume2, ShoppingBag } from 'lucide-react';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 const normalizeSpeech = (text) => {
     if (!text) return '';
@@ -19,12 +22,55 @@ const normalizeSpeech = (text) => {
     return normalized;
 };
 
+const matchMenuItems = (text, menu) => {
+    if (!text || !menu || menu.length === 0) return [];
+
+    // Split the speech into potential words/phrases
+    const words = text.split(' ');
+    let detected = [];
+
+    // Simple iteration to find best matches in the active menu
+    menu.forEach(item => {
+        // RapidFuzz Partial Ratio (finds string similarity)
+        const score = fuzz.partial_ratio(item.item_name.toLowerCase(), text);
+
+        // If the fuzzy match is highly confident (e.g > 85%)
+        if (score > 85) {
+            // Prevent duplicate detections of the same item name in a single breath
+            if (!detected.find(d => d.id === item.id)) {
+                detected.push({ ...item, quantity: 1 });
+            }
+        }
+    });
+
+    return detected;
+};
+
 export default function VoiceOrderPanel() {
     const [isListening, setIsListening] = useState(false);
     const [transcript, setTranscript] = useState('');
     const [normalizedTranscript, setNormalizedTranscript] = useState('');
+    const [matchedItems, setMatchedItems] = useState([]);
+    const [menuList, setMenuList] = useState([]);
     const [error, setError] = useState(null);
     const recognitionRef = useRef(null);
+
+    // Initial Fetch of Menu
+    useEffect(() => {
+        const fetchMenu = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) return;
+                const response = await axios.get(`${API_URL}/api/menu`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setMenuList(response.data);
+            } catch (err) {
+                console.error("Failed to fetch menu for AI call", err);
+            }
+        };
+        fetchMenu();
+    }, []);
 
     useEffect(() => {
         // Check for browser support
@@ -55,7 +101,9 @@ export default function VoiceOrderPanel() {
                 currentTranscript += event.results[i][0].transcript;
             }
             setTranscript(currentTranscript);
-            setNormalizedTranscript(normalizeSpeech(currentTranscript));
+            const normalized = normalizeSpeech(currentTranscript);
+            setNormalizedTranscript(normalized);
+            setMatchedItems(matchMenuItems(normalized, menuList));
         };
 
         recognition.onerror = (event) => {
@@ -80,6 +128,7 @@ export default function VoiceOrderPanel() {
     const startListening = () => {
         setTranscript('');
         setNormalizedTranscript('');
+        setMatchedItems([]);
         setError(null);
         if (recognitionRef.current) {
             try {
@@ -138,6 +187,25 @@ export default function VoiceOrderPanel() {
                                     <p className="text-emerald-700 text-lg leading-relaxed font-semibold bg-emerald-50 inline-block px-3 py-1 rounded-lg border border-emerald-100/50">
                                         {normalizedTranscript}
                                     </p>
+                                </div>
+                            )}
+
+                            {matchedItems.length > 0 && (
+                                <div className="pt-4 border-t border-slate-100">
+                                    <p className="text-xs font-bold text-blue-500 uppercase tracking-widest mb-3 flex items-center gap-1.5 border-b border-transparent">
+                                        <ShoppingBag size={14} /> Detect Order Items
+                                    </p>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        {matchedItems.map((item, idx) => (
+                                            <div key={idx} className="flex justify-between items-center p-3 border border-blue-100 bg-blue-50/50 rounded-xl">
+                                                <div className="flex flex-col">
+                                                    <span className="font-bold text-slate-800">{item.item_name}</span>
+                                                    <span className="text-xs font-semibold text-slate-500">{item.category}</span>
+                                                </div>
+                                                <span className="font-extrabold text-[#FF6B2C]">₹{item.price}</span>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
                         </div>
