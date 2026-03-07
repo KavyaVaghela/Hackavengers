@@ -205,7 +205,7 @@ export default function Dashboard() {
                                 badge={cards[2].badge}
                                 featured={cards[2].featured}
                                 featuredLabel={cards[2].featuredLabel}
-                                onClick={() => router.push('/dashboard/menu-doctor')}
+                                onClick={() => router.push('/dashboard/ai-menu-doctor')}
                             />
                             <FeatureCard
                                 icon={cards[4].emoji}
